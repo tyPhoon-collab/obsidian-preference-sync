@@ -43,23 +43,13 @@ When changes are applied, the CLI reminds you to restart Obsidian so plugin and 
 
 ## Config
 
-```toml
-plugins = [
-  "obsidian-linter",
-  "easy-typing-obsidian",
-]
+The files under `examples/` are my favorite Obsidian setup. :)
+They are meant to be copied, edited, and grown into your own portable preference pack.
 
-themes = [
-  "Primary",
-]
+See [`examples/config.toml`](examples/config.toml) for the full example config.
 
-active_theme = "Primary"
-
-hotkeys = "obsidian-settings/hotkeys.json"
-
-[plugin_settings]
-obsidian-linter = "plugin-settings/obsidian-linter"
-```
+Add more entries under `[plugin_settings]` when you want a plugin's settings to travel with you.
+For example, export or copy a plugin's settings directory from a tuned vault into `examples/plugin-settings/<plugin-id>/`, then point the config at it.
 
 Relative `plugin_settings` paths are resolved from the config file directory. `~/...` is expanded to the current user's home directory.
 `hotkeys` uses the same path resolution rules and copies to `.obsidian/hotkeys.json`.

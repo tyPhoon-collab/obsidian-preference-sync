@@ -31,3 +31,4 @@ hotkeys = "obsidian-settings/hotkeys.json"
 
 [plugin_settings]
 obsidian-linter = "plugin-settings/obsidian-linter"
+quick-peek-sidebar = "plugin-settings/quick-peek-sidebar"
