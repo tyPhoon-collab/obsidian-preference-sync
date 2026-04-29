@@ -1,0 +1,33 @@
+plugins = [
+  "2hop-links-plus",
+  "dataview",
+  "obsidian-auto-link-title",
+  "obsidian-chartsview-plugin",
+  "obsidian-task-archiver",
+  "obsidian-tasks-plugin",
+  "obsidian-tagfolder",
+  "obsidian-linter",
+  "easy-typing-obsidian",
+  "copy-inline-code",
+  "obsidian-outliner",
+  "code-styler",
+  "colored-tags",
+  "darlal-switcher-plus",
+  "homepage",
+  "quick-peek-sidebar",
+  "shukuchi",
+  "typewriter-mode",
+  "open-tab-settings",
+  "various-complements",
+]
+
+themes = [
+  "Primary",
+]
+
+active_theme = "Primary"
+
+hotkeys = "obsidian-settings/hotkeys.json"
+
+[plugin_settings]
+obsidian-linter = "plugin-settings/obsidian-linter"
