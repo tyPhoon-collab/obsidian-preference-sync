@@ -59,8 +59,6 @@ hotkeys = "obsidian-settings/hotkeys.json"
 
 [plugin_settings]
 obsidian-linter = "plugin-settings/obsidian-linter"
-easy-typing-obsidian = "plugin-settings/easy-typing-obsidian"
-table-editor-obsidian = "plugin-settings/table-editor-obsidian"
 ```
 
 Relative `plugin_settings` paths are resolved from the config file directory. `~/...` is expanded to the current user's home directory.
@@ -75,6 +73,10 @@ When copying plugin settings, these names are excluded:
 - `manifest.json`
 - `styles.css`
 - `node_modules`
+
+Plugin settings are copied file-by-file from the configured source directory into the plugin directory in the target vault.
+If a configured settings file already exists in the vault with different content, it is overwritten by the source file.
+Files that exist only in the vault are not deleted.
 
 ## Development
 
