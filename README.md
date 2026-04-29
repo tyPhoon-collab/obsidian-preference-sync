@@ -92,3 +92,25 @@ just build
 ```
 
 `just check` runs format, tests, and build.
+
+## Release
+
+Releases are created by GitHub Actions when a version tag is pushed.
+The tag is the source of truth for the release version.
+
+Before tagging, run a local snapshot build:
+
+```sh
+just release-check
+just release-snapshot
+```
+
+To publish a release:
+
+```sh
+just release v0.1.0
+```
+
+The release task fetches remote tags, shows the latest version tag, rejects non-`vX.Y.Z` versions, and stops if the requested version is not greater than the latest tag.
+The release workflow uses GoReleaser to publish a GitHub Release with archives for macOS, Linux, and Windows on amd64 and arm64, plus `checksums.txt`.
+Release artifacts are generated under `dist/` locally and are not committed.
