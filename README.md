@@ -24,6 +24,13 @@ Dangerous plugin settings:
 
 ## Usage
 
+Install with Homebrew:
+
+```sh
+brew tap tyPhoon-collab/tap
+brew install --cask obsidian-preference-sync
+```
+
 ```sh
 obsidian-preference-sync \
   --vault "$HOME/Documents/Obsidian Vault" \
@@ -107,6 +114,7 @@ just release v0.1.0
 
 The release task fetches remote tags, shows the latest version tag, rejects non-`vX.Y.Z` versions, and stops if the requested version is not greater than the latest tag.
 The release workflow uses GoReleaser to publish a GitHub Release with archives for macOS, Linux, and Windows on amd64 and arm64, plus `checksums.txt`.
+It also updates the Homebrew cask in `tyPhoon-collab/homebrew-tap`; the repository must define `HOMEBREW_TAP_GITHUB_TOKEN` with push access to that tap.
 Release artifacts are generated under `dist/` locally and are not committed.
 
 ## License

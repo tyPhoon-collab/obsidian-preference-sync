@@ -34,6 +34,22 @@ archives:
 checksum:
   name_template: checksums.txt
 
+homebrew_casks:
+  - name: obsidian-preference-sync
+    ids:
+      - archives
+    binaries:
+      - obsidian-preference-sync
+    repository:
+      owner: tyPhoon-collab
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Casks
+    homepage: "https://github.com/tyPhoon-collab/obsidian-preference-sync"
+    description: "Synchronize selected Obsidian plugins, plugin settings, and app settings"
+    commit_msg_template: "Update obsidian-preference-sync to {{ .Tag }}"
+
 changelog:
   use: github
   sort: asc
