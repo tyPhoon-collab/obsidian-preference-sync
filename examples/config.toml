@@ -27,8 +27,11 @@ themes = [
 
 active_theme = "Primary"
 
+vim_mode = true
+
 hotkeys = "obsidian-settings/hotkeys.json"
 
 [plugin_settings]
 obsidian-linter = "plugin-settings/obsidian-linter"
 quick-peek-sidebar = "plugin-settings/quick-peek-sidebar"
+various-complements = "plugin-settings/various-complements"

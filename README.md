@@ -1,12 +1,13 @@
 # obsidian-preference-sync
 
-`obsidian-preference-sync` is a small CLI for synchronizing selected Obsidian community plugins and explicitly selected plugin settings across multiple vaults or Macs.
+`obsidian-preference-sync` is a small CLI for synchronizing selected Obsidian community plugins, explicitly selected plugin settings, and a small set of app settings across multiple vaults or Macs.
 
-It does not synchronize vault content. It only touches the plugin IDs and plugin settings that are explicitly listed in the config file.
+It does not synchronize vault content. It only touches the plugin IDs, plugin settings, and app settings that are explicitly listed in the config file.
 
 ## Safety policy
 
 - `community-plugins.json` is updated by upsert only.
+- `app.json` is updated only for explicitly configured fields.
 - Existing enabled plugin IDs are never removed.
 - Only configured plugin IDs are installed.
 - Only configured plugin settings directories are copied.
@@ -56,6 +57,7 @@ Relative `plugin_settings` paths are resolved from the config file directory. `~
 
 `themes` installs or updates only the named community themes. Theme files are copied to `.obsidian/themes/<theme-name>/`.
 `active_theme` is optional. When set, it must also be listed in `themes`, and only the `cssTheme` field in `.obsidian/appearance.json` is updated.
+`vim_mode` is optional. When set, only the `vimMode` field in `.obsidian/app.json` is updated.
 
 When copying plugin settings, these names are excluded:
 

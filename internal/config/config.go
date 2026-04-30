@@ -14,6 +14,7 @@ type Config struct {
 	Plugins        []string          `toml:"plugins"`
 	Themes         []string          `toml:"themes"`
 	ActiveTheme    string            `toml:"active_theme"`
+	VimMode        *bool             `toml:"vim_mode"`
 	Hotkeys        string            `toml:"hotkeys"`
 	PluginSettings map[string]string `toml:"plugin_settings"`
 }

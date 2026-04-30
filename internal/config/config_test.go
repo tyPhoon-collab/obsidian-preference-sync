@@ -49,6 +49,25 @@ hotkeys = "obsidian-settings/hotkeys.json"
 	}
 }
 
+func TestLoadVimMode(t *testing.T) {
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.toml")
+	if err := os.WriteFile(configPath, []byte(`
+plugins = []
+vim_mode = true
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := Load(configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.VimMode == nil || *cfg.VimMode != true {
+		t.Fatalf("got VimMode %v, want true", cfg.VimMode)
+	}
+}
+
 func TestValidateRejectsDuplicatePluginIDs(t *testing.T) {
 	cfg := Config{Plugins: []string{"a", "a"}}
 	if err := cfg.Validate(); err == nil {

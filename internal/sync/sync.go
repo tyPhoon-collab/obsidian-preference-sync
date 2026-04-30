@@ -8,6 +8,7 @@ import (
 	"sort"
 
 	"obsidian-preference-sync/internal/appearance"
+	"obsidian-preference-sync/internal/appsettings"
 	"obsidian-preference-sync/internal/config"
 	gh "obsidian-preference-sync/internal/github"
 	"obsidian-preference-sync/internal/install"
@@ -30,6 +31,7 @@ type Plan struct {
 	PluginInstalls        []install.Plan
 	Themes                []theme.Plan
 	ActiveTheme           *appearance.Plan
+	VimMode               *appsettings.VimModePlan
 	CommunityPluginsToAdd []string
 	PluginSettings        []settings.CopyPlan
 	Hotkeys               *obsidiansettings.CopyPlan
@@ -46,6 +48,9 @@ func (p Plan) Changed() bool {
 		}
 	}
 	if p.ActiveTheme != nil && p.ActiveTheme.Changed {
+		return true
+	}
+	if p.VimMode != nil && p.VimMode.Changed {
 		return true
 	}
 	for _, cp := range p.PluginSettings {
@@ -116,6 +121,13 @@ func BuildPlan(ctx context.Context, opts Options) (Plan, config.Config, vault.Va
 			return Plan{}, config.Config{}, vault.Vault{}, err
 		}
 		plan.ActiveTheme = &p
+	}
+	if cfg.VimMode != nil {
+		p, err := appsettings.BuildVimModePlan(v, *cfg.VimMode)
+		if err != nil {
+			return Plan{}, config.Config{}, vault.Vault{}, err
+		}
+		plan.VimMode = &p
 	}
 
 	added, _, err := v.UpsertEnabledPlugins(cfg.Plugins, true)
@@ -188,6 +200,12 @@ func Apply(ctx context.Context, plan Plan, cfg config.Config, v vault.Vault, ver
 			return err
 		}
 	}
+	if plan.VimMode != nil && plan.VimMode.Changed {
+		fmt.Fprintf(stdout, "vim mode: setting to %t\n", plan.VimMode.Enable)
+		if err := appsettings.ApplyVimMode(*plan.VimMode); err != nil {
+			return err
+		}
+	}
 
 	added, enabledChanged, err := v.UpsertEnabledPlugins(cfg.Plugins, false)
 	if err != nil {
@@ -256,6 +274,13 @@ func RenderPlan(plan Plan, verbose bool, stdout io.Writer, stderr io.Writer) {
 			fmt.Fprintf(stdout, "active theme: will set to %s\n", plan.ActiveTheme.ThemeName)
 		} else if verbose {
 			fmt.Fprintf(stdout, "active theme: already %s\n", plan.ActiveTheme.ThemeName)
+		}
+	}
+	if plan.VimMode != nil {
+		if plan.VimMode.Changed {
+			fmt.Fprintf(stdout, "vim mode: will set to %t\n", plan.VimMode.Enable)
+		} else if verbose {
+			fmt.Fprintf(stdout, "vim mode: already %t\n", plan.VimMode.Enable)
 		}
 	}
 	if len(plan.CommunityPluginsToAdd) > 0 {

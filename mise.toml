@@ -1,4 +1,4 @@
 [tools]
 go = "1.26.2"
-goreleaser = "latest"
+goreleaser = "2.15.4"
 just = "1.50.0"
