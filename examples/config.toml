@@ -5,7 +5,6 @@ plugins = [
   "obsidian-chartsview-plugin",
   "obsidian-task-archiver",
   "obsidian-tasks-plugin",
-  "obsidian-tagfolder",
   "obsidian-linter",
   "easy-typing-obsidian",
   "copy-inline-code",
@@ -13,12 +12,11 @@ plugins = [
   "code-styler",
   "colored-tags",
   "darlal-switcher-plus",
-  "homepage",
-  "quick-peek-sidebar",
   "shukuchi",
   "typewriter-mode",
   "open-tab-settings",
   "various-complements",
+  "notebook-navigator",
 ]
 
 themes = [
@@ -33,5 +31,5 @@ hotkeys = "obsidian-settings/hotkeys.json"
 
 [plugin_settings]
 obsidian-linter = "plugin-settings/obsidian-linter"
-quick-peek-sidebar = "plugin-settings/quick-peek-sidebar"
 various-complements = "plugin-settings/various-complements"
+notebook-navigator = "plugin-settings/notebook-navigator"
