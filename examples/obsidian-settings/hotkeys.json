@@ -58,15 +58,6 @@
       "key": "3"
     }
   ],
-  "editor:toggle-code": [
-    {
-      "modifiers": [
-        "Mod",
-        "Shift"
-      ],
-      "key": "C"
-    }
-  ],
   "darlal-switcher-plus:switcher-plus:open-commands": [
     {
       "modifiers": [
@@ -74,15 +65,6 @@
         "Shift"
       ],
       "key": "P"
-    }
-  ],
-  "editor:toggle-bullet-list": [
-    {
-      "modifiers": [
-        "Mod",
-        "Shift"
-      ],
-      "key": "-"
     }
   ],
   "quick-peek-sidebar:toggle-both-sidebars": [
@@ -129,5 +111,27 @@
       ],
       "key": "ArrowRight"
     }
-  ]
+  ],
+  "file-explorer:new-file-in-new-pane": [],
+  "editor:toggle-code": [
+    {
+      "modifiers": [
+        "Ctrl",
+        "Shift"
+      ],
+      "key": "C"
+    }
+  ],
+  "editor:toggle-bullet-list": [
+    {
+      "modifiers": [
+        "Ctrl",
+        "Shift"
+      ],
+      "key": "="
+    }
+  ],
+  "editor:toggle-comments": [],
+  "easy-typing-obsidian:easy-typing-format-switch": [],
+  "easy-typing-obsidian:easy-typing-toggle-comment": []
 }
