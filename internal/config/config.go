@@ -16,6 +16,7 @@ type Config struct {
 	ActiveTheme    string            `toml:"active_theme"`
 	VimMode        *bool             `toml:"vim_mode"`
 	Hotkeys        string            `toml:"hotkeys"`
+	Vimrc          string            `toml:"vimrc"`
 	PluginSettings map[string]string `toml:"plugin_settings"`
 }
 
@@ -44,6 +45,13 @@ func Load(path string) (Config, error) {
 			return Config{}, fmt.Errorf("hotkeys: %w", err)
 		}
 		cfg.Hotkeys = expanded
+	}
+	if cfg.Vimrc != "" {
+		expanded, err := ExpandPath(cfg.Vimrc, base)
+		if err != nil {
+			return Config{}, fmt.Errorf("vimrc: %w", err)
+		}
+		cfg.Vimrc = expanded
 	}
 	return cfg, nil
 }

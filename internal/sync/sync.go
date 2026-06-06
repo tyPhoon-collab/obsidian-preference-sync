@@ -35,6 +35,7 @@ type Plan struct {
 	CommunityPluginsToAdd []string
 	PluginSettings        []settings.CopyPlan
 	Hotkeys               *obsidiansettings.CopyPlan
+	Vimrc                 *obsidiansettings.CopyPlan
 	Warnings              []string
 }
 
@@ -58,7 +59,10 @@ func (p Plan) Changed() bool {
 			return true
 		}
 	}
-	return p.Hotkeys != nil && p.Hotkeys.Changed
+	if p.Hotkeys != nil && p.Hotkeys.Changed {
+		return true
+	}
+	return p.Vimrc != nil && p.Vimrc.Changed
 }
 
 func BuildPlan(ctx context.Context, opts Options) (Plan, config.Config, vault.Vault, error) {
@@ -160,6 +164,13 @@ func BuildPlan(ctx context.Context, opts Options) (Plan, config.Config, vault.Va
 		}
 		plan.Hotkeys = &cp
 	}
+	if cfg.Vimrc != "" {
+		cp, err := obsidiansettings.Plan(v, "vimrc", cfg.Vimrc)
+		if err != nil {
+			return Plan{}, config.Config{}, vault.Vault{}, err
+		}
+		plan.Vimrc = &cp
+	}
 
 	return plan, cfg, v, nil
 }
@@ -239,6 +250,15 @@ func Apply(ctx context.Context, plan Plan, cfg config.Config, v vault.Vault, ver
 			return err
 		}
 	}
+	if plan.Vimrc != nil && plan.Vimrc.Changed {
+		fmt.Fprintf(stdout, "vimrc: copying to %s\n", plan.Vimrc.Target)
+		if verbose {
+			fmt.Fprintf(stdout, "vimrc: source %s\n", plan.Vimrc.Source)
+		}
+		if err := obsidiansettings.Apply(*plan.Vimrc, false); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -305,6 +325,13 @@ func RenderPlan(plan Plan, verbose bool, stdout io.Writer, stderr io.Writer) {
 			fmt.Fprintf(stdout, "hotkeys: will copy %s to %s\n", plan.Hotkeys.Source, plan.Hotkeys.Target)
 		} else if verbose {
 			fmt.Fprintln(stdout, "hotkeys: no changes")
+		}
+	}
+	if plan.Vimrc != nil {
+		if plan.Vimrc.Changed {
+			fmt.Fprintf(stdout, "vimrc: will copy %s to %s\n", plan.Vimrc.Source, plan.Vimrc.Target)
+		} else if verbose {
+			fmt.Fprintln(stdout, "vimrc: no changes")
 		}
 	}
 	if !plan.Changed() {

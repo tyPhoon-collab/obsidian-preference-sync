@@ -61,6 +61,7 @@ For example, export or copy a plugin's settings directory from a tuned vault int
 
 Relative `plugin_settings` paths are resolved from the config file directory. `~/...` is expanded to the current user's home directory.
 `hotkeys` uses the same path resolution rules and copies to `.obsidian/hotkeys.json`.
+`vimrc` uses the same path resolution rules and copies to `.obsidian.vimrc` at the vault root.
 
 `themes` installs or updates only the named community themes. Theme files are copied to `.obsidian/themes/<theme-name>/`.
 `active_theme` is optional. When set, it must also be listed in `themes`, and only the `cssTheme` field in `.obsidian/appearance.json` is updated.

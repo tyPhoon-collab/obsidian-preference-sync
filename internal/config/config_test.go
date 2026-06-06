@@ -68,6 +68,26 @@ vim_mode = true
 	}
 }
 
+func TestLoadResolvesTopLevelVimrcFromConfigDir(t *testing.T) {
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.toml")
+	if err := os.WriteFile(configPath, []byte(`
+plugins = []
+vimrc = "obsidian-settings/.obsidian.vimrc"
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := Load(configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := filepath.Join(dir, "obsidian-settings", ".obsidian.vimrc")
+	if cfg.Vimrc != want {
+		t.Fatalf("got %q, want %q", cfg.Vimrc, want)
+	}
+}
+
 func TestValidateRejectsDuplicatePluginIDs(t *testing.T) {
 	cfg := Config{Plugins: []string{"a", "a"}}
 	if err := cfg.Validate(); err == nil {

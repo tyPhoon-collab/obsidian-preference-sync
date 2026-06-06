@@ -28,6 +28,7 @@ active_theme = "Primary"
 vim_mode = true
 
 hotkeys = "obsidian-settings/hotkeys.json"
+vimrc = "obsidian-settings/.obsidian.vimrc"
 
 [plugin_settings]
 obsidian-linter = "plugin-settings/obsidian-linter"
