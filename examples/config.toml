@@ -17,6 +17,7 @@ plugins = [
   "open-tab-settings",
   "various-complements",
   "notebook-navigator",
+  "leader-hotkeys-obsidian",
 ]
 
 themes = [
@@ -34,3 +35,4 @@ vimrc = "obsidian-settings/.obsidian.vimrc"
 obsidian-linter = "plugin-settings/obsidian-linter"
 various-complements = "plugin-settings/various-complements"
 notebook-navigator = "plugin-settings/notebook-navigator"
+leader-hotkeys-obsidian = "plugin-settings/leader-hotkeys-obsidian"
