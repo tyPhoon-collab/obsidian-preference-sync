@@ -2,9 +2,10 @@ set clipboard=unnamed
 
 unmap <Space>
 
-exmap quickSwitcher obcommand switcher:open
-nmap <Space><Space> :quickSwitcher<CR>
+" Quick Switcher++: ファイル/通常検索
+exmap switcherPlus obcommand darlal-switcher-plus:switcher-plus:open
+nmap <Space><Space> :switcherPlus<CR>
 
-exmap commandPalette obcommand command-palette:open
-nmap <Space>p :commandPalette<CR>
-
+" Quick Switcher++: コマンド検索
+exmap switcherPlusCommands obcommand darlal-switcher-plus:switcher-plus:open-commands
+nmap <Space>p :switcherPlusCommands<CR>
