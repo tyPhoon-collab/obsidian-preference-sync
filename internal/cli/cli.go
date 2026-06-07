@@ -55,17 +55,10 @@ func Run(ctx context.Context, args []string, stdout io.Writer, stderr io.Writer)
 	}
 	if planOnly {
 		syncer.RenderPlan(plan, *verbose, stdout, stderr)
-	} else if *verbose {
-		syncer.RenderPlan(plan, true, stdout, stderr)
 	}
 	if !planOnly {
 		if err := syncer.Apply(ctx, plan, cfg, v, *verbose, stdout); err != nil {
 			return err
-		}
-		if plan.Changed() {
-			fmt.Fprintln(stdout, "Restart Obsidian to ensure plugin and setting changes are fully applied.")
-		} else if !*verbose {
-			fmt.Fprintln(stdout, "no changes")
 		}
 	}
 

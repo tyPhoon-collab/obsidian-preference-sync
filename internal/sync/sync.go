@@ -184,65 +184,95 @@ func BuildPlan(ctx context.Context, opts Options) (Plan, config.Config, vault.Va
 }
 
 func Apply(ctx context.Context, plan Plan, cfg config.Config, v vault.Vault, verbose bool, stdout io.Writer) error {
+	out := newStyle(stdout)
+	fmt.Fprintf(stdout, "%s\n", out.heading(applySummary(plan)))
+	if !plan.Changed() {
+		return nil
+	}
+
 	client := gh.NewClient()
+	printedPlugins := false
 	for _, p := range plan.PluginInstalls {
 		plugin := registry.Plugin{ID: p.PluginID, Repo: p.Repo}
-		fmt.Fprintf(stdout, "installing plugin %s from %s\n", p.PluginID, p.Repo)
+		printSectionHeader(stdout, &printedPlugins, "Plugins")
+		action := "install"
+		if contains(plan.CommunityPluginsToAdd, p.PluginID) {
+			action = "install+enable"
+		}
+		fmt.Fprintf(stdout, "  %s %-14s %-30s %s\n", out.add("+"), action, p.PluginID, p.Repo)
 		installed, err := install.InstallPlugin(ctx, v, client, plugin)
 		if err != nil {
 			return err
 		}
 		if verbose {
-			fmt.Fprintf(stdout, "installed plugin %s files: %v\n", p.PluginID, installed.Files)
+			fmt.Fprintf(stdout, "    files %s\n", strings.Join(installed.Files, ", "))
 		}
 	}
 
+	printedThemes := false
 	for _, p := range plan.Themes {
 		if !p.Changed() {
 			continue
 		}
-		fmt.Fprintf(stdout, "theme %s: updating from %s\n", p.Name, p.Repo)
-		if verbose {
-			for _, file := range p.Files {
-				if file.Changed {
-					fmt.Fprintf(stdout, "theme %s: writing %s\n", p.Name, file.Name)
-				}
+		var files []string
+		for _, file := range p.Files {
+			if file.Changed {
+				files = append(files, file.Name)
 			}
+		}
+		printSectionHeader(stdout, &printedThemes, "Themes")
+		fmt.Fprintf(stdout, "  %s %-14s %-30s %s\n", out.change("~"), "update", p.Name, strings.Join(files, ", "))
+		if verbose {
+			fmt.Fprintf(stdout, "    source %s\n", p.Repo)
 		}
 		if err := theme.Apply(p); err != nil {
 			return err
 		}
 	}
+
+	printedObsidian := false
 	if plan.ActiveTheme != nil && plan.ActiveTheme.Changed {
-		fmt.Fprintf(stdout, "active theme: setting to %s\n", plan.ActiveTheme.ThemeName)
+		printSectionHeader(stdout, &printedObsidian, "Obsidian Settings")
+		fmt.Fprintf(stdout, "  %s %-14s %s\n", out.change("~"), "active-theme", plan.ActiveTheme.ThemeName)
 		if err := appearance.Apply(*plan.ActiveTheme); err != nil {
 			return err
 		}
 	}
 	if plan.VimMode != nil && plan.VimMode.Changed {
-		fmt.Fprintf(stdout, "vim mode: setting to %t\n", plan.VimMode.Enable)
+		printSectionHeader(stdout, &printedObsidian, "Obsidian Settings")
+		fmt.Fprintf(stdout, "  %s %-14s %t\n", out.change("~"), "vim-mode", plan.VimMode.Enable)
 		if err := appsettings.ApplyVimMode(*plan.VimMode); err != nil {
 			return err
 		}
 	}
 
+	for _, pluginID := range plan.CommunityPluginsToAdd {
+		if installPlanned(plan.PluginInstalls, pluginID) {
+			continue
+		}
+		printSectionHeader(stdout, &printedPlugins, "Plugins")
+		fmt.Fprintf(stdout, "  %s %-14s %s\n", out.add("+"), "enable", pluginID)
+	}
 	added, enabledChanged, err := v.UpsertEnabledPlugins(cfg.Plugins, false)
 	if err != nil {
 		return err
 	}
-	if enabledChanged {
-		fmt.Fprintf(stdout, "community-plugins.json: added %v\n", added)
+	if verbose && enabledChanged && len(added) > 0 {
+		fmt.Fprintf(stdout, "    community-plugins.json added %s\n", strings.Join(added, ", "))
 	}
 
+	printedFiles := false
 	for _, cp := range plan.PluginSettings {
 		if cp.Skipped || len(cp.Files) == 0 {
 			continue
 		}
-		fmt.Fprintf(stdout, "settings %s: copying %d file(s)\n", cp.PluginID, len(cp.Files))
+		printSectionHeader(stdout, &printedFiles, "Files To Copy")
+		fmt.Fprintf(stdout, "  %s %-24s %s\n", out.change("~"), "plugin/"+cp.PluginID, fileCount(len(cp.Files)))
 		if verbose {
 			for _, file := range cp.Files {
-				fmt.Fprintf(stdout, "settings %s: copying %s\n", cp.PluginID, file)
+				fmt.Fprintf(stdout, "    file %s\n", file)
 			}
+			fmt.Fprintf(stdout, "    source %s\n", cp.Source)
 		}
 		if err := settings.Apply(cp, false); err != nil {
 			return err
@@ -250,9 +280,10 @@ func Apply(ctx context.Context, plan Plan, cfg config.Config, v vault.Vault, ver
 	}
 
 	if plan.Hotkeys != nil && plan.Hotkeys.Changed {
-		fmt.Fprintf(stdout, "hotkeys: copying to %s\n", plan.Hotkeys.Target)
+		printSectionHeader(stdout, &printedFiles, "Files To Copy")
+		fmt.Fprintf(stdout, "  %s %-24s %s\n", out.change("~"), "hotkeys", relativeTarget(plan, plan.Hotkeys.Target))
 		if verbose {
-			fmt.Fprintf(stdout, "hotkeys: source %s\n", plan.Hotkeys.Source)
+			fmt.Fprintf(stdout, "    source %s\n", plan.Hotkeys.Source)
 		}
 		if err := obsidiansettings.Apply(*plan.Hotkeys, false); err != nil {
 			return err
@@ -262,14 +293,18 @@ func Apply(ctx context.Context, plan Plan, cfg config.Config, v vault.Vault, ver
 		if !cp.Changed {
 			continue
 		}
-		fmt.Fprintf(stdout, "vault file: copying to %s\n", cp.Target)
+		printSectionHeader(stdout, &printedFiles, "Files To Copy")
+		fmt.Fprintf(stdout, "  %s %-24s %s\n", out.change("~"), "vault-file", relativeTarget(plan, cp.Target))
 		if verbose {
-			fmt.Fprintf(stdout, "vault file: source %s\n", cp.Source)
+			fmt.Fprintf(stdout, "    source %s\n", cp.Source)
 		}
 		if err := vaultfiles.Apply(cp, false); err != nil {
 			return err
 		}
 	}
+
+	fmt.Fprintln(stdout, "\nDone")
+	fmt.Fprintln(stdout, "  Restart Obsidian to ensure plugin and setting changes are fully applied.")
 	return nil
 }
 
@@ -430,6 +465,17 @@ func planSummary(plan Plan) string {
 		return "Plan: 1 change"
 	}
 	return fmt.Sprintf("Plan: %d changes", changes)
+}
+
+func applySummary(plan Plan) string {
+	changes := plan.ChangeCount()
+	if changes == 0 {
+		return "Applying: no changes"
+	}
+	if changes == 1 {
+		return "Applying: 1 change"
+	}
+	return fmt.Sprintf("Applying: %d changes", changes)
 }
 
 func (p Plan) ChangeCount() int {
