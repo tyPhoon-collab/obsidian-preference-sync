@@ -17,6 +17,7 @@ import (
 	"obsidian-preference-sync/internal/settings"
 	"obsidian-preference-sync/internal/theme"
 	"obsidian-preference-sync/internal/vault"
+	"obsidian-preference-sync/internal/vaultfiles"
 )
 
 type Options struct {
@@ -35,7 +36,7 @@ type Plan struct {
 	CommunityPluginsToAdd []string
 	PluginSettings        []settings.CopyPlan
 	Hotkeys               *obsidiansettings.CopyPlan
-	Vimrc                 *obsidiansettings.CopyPlan
+	VaultFiles            []vaultfiles.CopyPlan
 	Warnings              []string
 }
 
@@ -62,7 +63,12 @@ func (p Plan) Changed() bool {
 	if p.Hotkeys != nil && p.Hotkeys.Changed {
 		return true
 	}
-	return p.Vimrc != nil && p.Vimrc.Changed
+	for _, cp := range p.VaultFiles {
+		if cp.Changed {
+			return true
+		}
+	}
+	return false
 }
 
 func BuildPlan(ctx context.Context, opts Options) (Plan, config.Config, vault.Vault, error) {
@@ -164,12 +170,12 @@ func BuildPlan(ctx context.Context, opts Options) (Plan, config.Config, vault.Va
 		}
 		plan.Hotkeys = &cp
 	}
-	if cfg.Vimrc != "" {
-		cp, err := obsidiansettings.Plan(v, "vimrc", cfg.Vimrc)
+	for _, file := range cfg.VaultFiles {
+		cp, err := vaultfiles.Plan(v, file)
 		if err != nil {
 			return Plan{}, config.Config{}, vault.Vault{}, err
 		}
-		plan.Vimrc = &cp
+		plan.VaultFiles = append(plan.VaultFiles, cp)
 	}
 
 	return plan, cfg, v, nil
@@ -250,12 +256,15 @@ func Apply(ctx context.Context, plan Plan, cfg config.Config, v vault.Vault, ver
 			return err
 		}
 	}
-	if plan.Vimrc != nil && plan.Vimrc.Changed {
-		fmt.Fprintf(stdout, "vimrc: copying to %s\n", plan.Vimrc.Target)
-		if verbose {
-			fmt.Fprintf(stdout, "vimrc: source %s\n", plan.Vimrc.Source)
+	for _, cp := range plan.VaultFiles {
+		if !cp.Changed {
+			continue
 		}
-		if err := obsidiansettings.Apply(*plan.Vimrc, false); err != nil {
+		fmt.Fprintf(stdout, "vault file: copying to %s\n", cp.Target)
+		if verbose {
+			fmt.Fprintf(stdout, "vault file: source %s\n", cp.Source)
+		}
+		if err := vaultfiles.Apply(cp, false); err != nil {
 			return err
 		}
 	}
@@ -327,11 +336,11 @@ func RenderPlan(plan Plan, verbose bool, stdout io.Writer, stderr io.Writer) {
 			fmt.Fprintln(stdout, "hotkeys: no changes")
 		}
 	}
-	if plan.Vimrc != nil {
-		if plan.Vimrc.Changed {
-			fmt.Fprintf(stdout, "vimrc: will copy %s to %s\n", plan.Vimrc.Source, plan.Vimrc.Target)
+	for _, cp := range plan.VaultFiles {
+		if cp.Changed {
+			fmt.Fprintf(stdout, "vault file: will copy %s to %s\n", cp.Source, cp.Target)
 		} else if verbose {
-			fmt.Fprintln(stdout, "vimrc: no changes")
+			fmt.Fprintf(stdout, "vault file: no changes for %s\n", cp.Target)
 		}
 	}
 	if !plan.Changed() {

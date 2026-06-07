@@ -1,0 +1,19 @@
+{
+  "keymapFile": {
+    "path": "spacekeys.yml",
+    "format": "auto",
+    "extend": false,
+    "autoReload": false
+  },
+  "modal": {
+    "delay": 500,
+    "execDelay": 100,
+    "showInvalid": true,
+    "backspaceReverts": true,
+    "backspaceCloses": true,
+    "trimDescriptions": true,
+    "dimBackground": true
+  },
+  "activateOnSpace": "enabled",
+  "pluginVersion": "0.5.0"
+}

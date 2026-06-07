@@ -68,12 +68,14 @@ vim_mode = true
 	}
 }
 
-func TestLoadResolvesTopLevelVimrcFromConfigDir(t *testing.T) {
+func TestLoadResolvesVaultFilesSourceFromConfigDir(t *testing.T) {
 	dir := t.TempDir()
 	configPath := filepath.Join(dir, "config.toml")
 	if err := os.WriteFile(configPath, []byte(`
 plugins = []
-vimrc = "obsidian-settings/.obsidian.vimrc"
+[[vault_files]]
+source = "vault-files/.obsidian.vimrc"
+target = ".obsidian.vimrc"
 `), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -82,9 +84,12 @@ vimrc = "obsidian-settings/.obsidian.vimrc"
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := filepath.Join(dir, "obsidian-settings", ".obsidian.vimrc")
-	if cfg.Vimrc != want {
-		t.Fatalf("got %q, want %q", cfg.Vimrc, want)
+	want := filepath.Join(dir, "vault-files", ".obsidian.vimrc")
+	if cfg.VaultFiles[0].Source != want {
+		t.Fatalf("got %q, want %q", cfg.VaultFiles[0].Source, want)
+	}
+	if cfg.VaultFiles[0].Target != ".obsidian.vimrc" {
+		t.Fatalf("got target %q", cfg.VaultFiles[0].Target)
 	}
 }
 
@@ -106,6 +111,23 @@ func TestValidateRequiresActiveThemeInThemes(t *testing.T) {
 	cfg := Config{Themes: []string{"Minimal"}, ActiveTheme: "Primary"}
 	if err := cfg.Validate(); err == nil {
 		t.Fatal("expected active theme validation error")
+	}
+}
+
+func TestValidateRejectsUnsafeVaultFileTarget(t *testing.T) {
+	cfg := Config{VaultFiles: []FileCopy{{Source: "spacekeys.yml", Target: "../spacekeys.yml"}}}
+	if err := cfg.Validate(); err == nil {
+		t.Fatal("expected unsafe vault file target error")
+	}
+}
+
+func TestValidateRejectsDuplicateVaultFileTargets(t *testing.T) {
+	cfg := Config{VaultFiles: []FileCopy{
+		{Source: "a", Target: "spacekeys.yml"},
+		{Source: "b", Target: "./spacekeys.yml"},
+	}}
+	if err := cfg.Validate(); err == nil {
+		t.Fatal("expected duplicate vault file target error")
 	}
 }
 

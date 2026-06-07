@@ -1,0 +1,44 @@
+items:
+  space:
+    command: darlal-switcher-plus:switcher-plus:open
+    description: Search files
+
+  p:
+    command: darlal-switcher-plus:switcher-plus:open-commands
+    description: Search commands
+
+  "/":
+    command: global-search:open
+    description: Global search
+
+  ",":
+    command: app:open-settings
+    description: Open settings
+
+  l:
+    command: obsidian-linter:lint-file
+    description: Lint current file
+
+  w:
+    command: editor:save-file
+    description: Save file
+
+  q:
+    command: workspace:close
+    description: Close current tab
+
+  Q:
+    command: workspace:close-window
+    description: Close window
+
+  t:
+    command: typewriter-mode:typewriter-toggle
+    description: Toggle typewriter mode
+
+  b:
+    command: app:toggle-left-sidebar
+    description: Toggle left sidebar
+
+  B:
+    command: app:toggle-right-sidebar
+    description: Toggle right sidebar

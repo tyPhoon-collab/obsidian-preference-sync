@@ -11,7 +11,6 @@ import (
 
 var targetFiles = map[string]string{
 	"hotkeys": "hotkeys.json",
-	"vimrc":   ".obsidian.vimrc",
 }
 
 type CopyPlan struct {
@@ -34,9 +33,6 @@ func Plan(v vault.Vault, name string, source string) (CopyPlan, error) {
 		return CopyPlan{}, fmt.Errorf("obsidian setting source for %s is a directory: %s", name, source)
 	}
 	target := filepath.Join(v.ObsidianDir, targetFile)
-	if targetFile == ".obsidian.vimrc" {
-		target = filepath.Join(v.Root, targetFile)
-	}
 	same, err := fileutil.FileContentEqual(source, target)
 	if err != nil {
 		return CopyPlan{}, err

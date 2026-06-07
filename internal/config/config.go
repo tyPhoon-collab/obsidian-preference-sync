@@ -16,8 +16,13 @@ type Config struct {
 	ActiveTheme    string            `toml:"active_theme"`
 	VimMode        *bool             `toml:"vim_mode"`
 	Hotkeys        string            `toml:"hotkeys"`
-	Vimrc          string            `toml:"vimrc"`
+	VaultFiles     []FileCopy        `toml:"vault_files"`
 	PluginSettings map[string]string `toml:"plugin_settings"`
+}
+
+type FileCopy struct {
+	Source string `toml:"source"`
+	Target string `toml:"target"`
 }
 
 func Load(path string) (Config, error) {
@@ -46,12 +51,13 @@ func Load(path string) (Config, error) {
 		}
 		cfg.Hotkeys = expanded
 	}
-	if cfg.Vimrc != "" {
-		expanded, err := ExpandPath(cfg.Vimrc, base)
+	for i := range cfg.VaultFiles {
+		expanded, err := ExpandPath(cfg.VaultFiles[i].Source, base)
 		if err != nil {
-			return Config{}, fmt.Errorf("vimrc: %w", err)
+			return Config{}, fmt.Errorf("vault_files[%d].source: %w", i, err)
 		}
-		cfg.Vimrc = expanded
+		cfg.VaultFiles[i].Source = expanded
+		cfg.VaultFiles[i].Target = filepath.Clean(cfg.VaultFiles[i].Target)
 	}
 	return cfg, nil
 }
@@ -90,6 +96,23 @@ func (c Config) Validate() error {
 		if strings.TrimSpace(source) == "" {
 			return fmt.Errorf("plugin_settings.%s has empty source path", id)
 		}
+	}
+	seenVaultFiles := map[string]bool{}
+	for i, file := range c.VaultFiles {
+		if strings.TrimSpace(file.Source) == "" {
+			return fmt.Errorf("vault_files[%d].source is empty", i)
+		}
+		if strings.TrimSpace(file.Target) == "" {
+			return fmt.Errorf("vault_files[%d].target is empty", i)
+		}
+		target := filepath.Clean(file.Target)
+		if filepath.IsAbs(target) || target == "." || target == ".." || strings.HasPrefix(target, ".."+string(filepath.Separator)) {
+			return fmt.Errorf("vault_files[%d].target must be a vault-relative file path", i)
+		}
+		if seenVaultFiles[target] {
+			return fmt.Errorf("duplicate vault_files target %q", target)
+		}
+		seenVaultFiles[target] = true
 	}
 	return nil
 }

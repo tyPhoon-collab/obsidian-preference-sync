@@ -11,6 +11,7 @@ It does not synchronize vault content. It only touches the plugin IDs, plugin se
 - Existing enabled plugin IDs are never removed.
 - Only configured plugin IDs are installed.
 - Only configured plugin settings directories are copied.
+- Only configured vault files are copied.
 - `core-plugins.json`, `workspace.json`, and `workspace-mobile.json` are not touched.
 - Dangerous plugin settings are rejected unless `--allow-dangerous` is passed.
 
@@ -61,7 +62,7 @@ For example, export or copy a plugin's settings directory from a tuned vault int
 
 Relative `plugin_settings` paths are resolved from the config file directory. `~/...` is expanded to the current user's home directory.
 `hotkeys` uses the same path resolution rules and copies to `.obsidian/hotkeys.json`.
-`vimrc` uses the same path resolution rules and copies to `.obsidian.vimrc` at the vault root.
+`vault_files` entries copy individual files into vault-relative target paths. Their `source` paths use the same path resolution rules, and their `target` paths must stay inside the vault.
 
 `themes` installs or updates only the named community themes. Theme files are copied to `.obsidian/themes/<theme-name>/`.
 `active_theme` is optional. When set, it must also be listed in `themes`, and only the `cssTheme` field in `.obsidian/appearance.json` is updated.

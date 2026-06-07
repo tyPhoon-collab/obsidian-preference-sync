@@ -17,7 +17,12 @@ plugins = [
   "open-tab-settings",
   "various-complements",
   "notebook-navigator",
-  "leader-hotkeys-obsidian",
+  "obsidian-vimrc-support",
+  "templater-obsidian",
+  "obsidian-meta-bind-plugin",
+  "editing-toolbar",
+  "obsidian-advanced-uri",
+  "spacekeys",
 ]
 
 themes = [
@@ -29,10 +34,17 @@ active_theme = "Primary"
 vim_mode = true
 
 hotkeys = "obsidian-settings/hotkeys.json"
-vimrc = "obsidian-settings/.obsidian.vimrc"
+
+[[vault_files]]
+source = "vault-files/.obsidian.vimrc"
+target = ".obsidian.vimrc"
+
+[[vault_files]]
+source = "vault-files/spacekeys.yml"
+target = "spacekeys.yml"
 
 [plugin_settings]
 obsidian-linter = "plugin-settings/obsidian-linter"
 various-complements = "plugin-settings/various-complements"
 notebook-navigator = "plugin-settings/notebook-navigator"
-leader-hotkeys-obsidian = "plugin-settings/leader-hotkeys-obsidian"
+spacekeys = "plugin-settings/spacekeys"
