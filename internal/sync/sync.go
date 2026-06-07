@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"obsidian-preference-sync/internal/appearance"
 	"obsidian-preference-sync/internal/appsettings"
@@ -272,22 +274,39 @@ func Apply(ctx context.Context, plan Plan, cfg config.Config, v vault.Vault, ver
 }
 
 func RenderPlan(plan Plan, verbose bool, stdout io.Writer, stderr io.Writer) {
+	out := newStyle(stdout)
+	errStyle := newStyle(stderr)
+
+	fmt.Fprintf(stdout, "%s\n", out.heading(planSummary(plan)))
 	if verbose {
-		fmt.Fprintf(stdout, "vault: %s\n", plan.VaultPath)
-		fmt.Fprintf(stdout, "config: %s\n", plan.ConfigPath)
+		fmt.Fprintf(stdout, "\nVault  %s\n", plan.VaultPath)
+		fmt.Fprintf(stdout, "Config %s\n", plan.ConfigPath)
 	}
 
 	for _, warning := range plan.Warnings {
-		fmt.Fprintf(stderr, "warning: %s\n", warning)
+		fmt.Fprintf(stderr, "%s warning: %s\n", errStyle.warn("!"), warning)
 	}
+
+	printedPlugins := false
 	for _, p := range plan.PluginInstalls {
-		fmt.Fprintf(stdout, "plugin %s: will install from %s\n", p.PluginID, p.Repo)
+		printSectionHeader(stdout, &printedPlugins, "Plugins")
+		action := "install"
+		if contains(plan.CommunityPluginsToAdd, p.PluginID) {
+			action = "install+enable"
+		}
+		fmt.Fprintf(stdout, "  %s %-14s %-30s %s\n", out.add("+"), action, p.PluginID, p.Repo)
 	}
+	for _, pluginID := range plan.CommunityPluginsToAdd {
+		if installPlanned(plan.PluginInstalls, pluginID) {
+			continue
+		}
+		printSectionHeader(stdout, &printedPlugins, "Plugins")
+		fmt.Fprintf(stdout, "  %s %-14s %s\n", out.add("+"), "enable", pluginID)
+	}
+
+	printedThemes := false
 	for _, p := range plan.Themes {
 		if !p.Changed() {
-			if verbose {
-				fmt.Fprintf(stdout, "theme %s: no changes\n", p.Name)
-			}
 			continue
 		}
 		var files []string
@@ -296,56 +315,211 @@ func RenderPlan(plan Plan, verbose bool, stdout io.Writer, stderr io.Writer) {
 				files = append(files, file.Name)
 			}
 		}
-		fmt.Fprintf(stdout, "theme %s: will update %v from %s\n", p.Name, files, p.Repo)
+		printSectionHeader(stdout, &printedThemes, "Themes")
+		fmt.Fprintf(stdout, "  %s %-14s %-30s %s\n", out.change("~"), "update", p.Name, strings.Join(files, ", "))
+		if verbose {
+			fmt.Fprintf(stdout, "    source %s\n", p.Repo)
+		}
 	}
+
+	printedObsidian := false
 	if plan.ActiveTheme != nil {
 		if plan.ActiveTheme.Changed {
-			fmt.Fprintf(stdout, "active theme: will set to %s\n", plan.ActiveTheme.ThemeName)
-		} else if verbose {
-			fmt.Fprintf(stdout, "active theme: already %s\n", plan.ActiveTheme.ThemeName)
+			printSectionHeader(stdout, &printedObsidian, "Obsidian Settings")
+			fmt.Fprintf(stdout, "  %s %-14s %s\n", out.change("~"), "active-theme", plan.ActiveTheme.ThemeName)
 		}
 	}
 	if plan.VimMode != nil {
 		if plan.VimMode.Changed {
-			fmt.Fprintf(stdout, "vim mode: will set to %t\n", plan.VimMode.Enable)
-		} else if verbose {
-			fmt.Fprintf(stdout, "vim mode: already %t\n", plan.VimMode.Enable)
+			printSectionHeader(stdout, &printedObsidian, "Obsidian Settings")
+			fmt.Fprintf(stdout, "  %s %-14s %t\n", out.change("~"), "vim-mode", plan.VimMode.Enable)
 		}
 	}
-	if len(plan.CommunityPluginsToAdd) > 0 {
-		fmt.Fprintf(stdout, "community-plugins.json: will add %v\n", plan.CommunityPluginsToAdd)
-	} else if verbose {
-		fmt.Fprintln(stdout, "community-plugins.json: no missing plugin ids")
-	}
+
+	printedFiles := false
 	for _, cp := range plan.PluginSettings {
 		if cp.Skipped {
 			continue
 		}
 		if len(cp.Files) == 0 {
-			if verbose {
-				fmt.Fprintf(stdout, "settings %s: no changes\n", cp.PluginID)
-			}
 			continue
 		}
-		fmt.Fprintf(stdout, "settings %s: will copy %d file(s) from %s\n", cp.PluginID, len(cp.Files), cp.Source)
+		printSectionHeader(stdout, &printedFiles, "Files To Copy")
+		fmt.Fprintf(stdout, "  %s %-24s %s\n", out.change("~"), "plugin/"+cp.PluginID, fileCount(len(cp.Files)))
+		if verbose {
+			fmt.Fprintf(stdout, "    source %s\n", cp.Source)
+		}
 	}
 	if plan.Hotkeys != nil {
 		if plan.Hotkeys.Changed {
-			fmt.Fprintf(stdout, "hotkeys: will copy %s to %s\n", plan.Hotkeys.Source, plan.Hotkeys.Target)
-		} else if verbose {
-			fmt.Fprintln(stdout, "hotkeys: no changes")
+			printSectionHeader(stdout, &printedFiles, "Files To Copy")
+			fmt.Fprintf(stdout, "  %s %-24s %s\n", out.change("~"), "hotkeys", relativeTarget(plan, plan.Hotkeys.Target))
+			if verbose {
+				fmt.Fprintf(stdout, "    source %s\n", plan.Hotkeys.Source)
+			}
 		}
 	}
 	for _, cp := range plan.VaultFiles {
 		if cp.Changed {
-			fmt.Fprintf(stdout, "vault file: will copy %s to %s\n", cp.Source, cp.Target)
-		} else if verbose {
-			fmt.Fprintf(stdout, "vault file: no changes for %s\n", cp.Target)
+			printSectionHeader(stdout, &printedFiles, "Files To Copy")
+			fmt.Fprintf(stdout, "  %s %-24s %s\n", out.change("~"), "vault-file", relativeTarget(plan, cp.Target))
+			if verbose {
+				fmt.Fprintf(stdout, "    source %s\n", cp.Source)
+			}
 		}
 	}
-	if !plan.Changed() {
-		fmt.Fprintln(stdout, "no changes")
+
+	if verbose {
+		printUnchanged(plan, stdout, out)
 	}
+}
+
+func printUnchanged(plan Plan, stdout io.Writer, out textStyle) {
+	printed := false
+	for _, p := range plan.Themes {
+		if !p.Changed() {
+			printSectionHeader(stdout, &printed, "Unchanged")
+			fmt.Fprintf(stdout, "  %s theme %s\n", out.same("="), p.Name)
+		}
+	}
+	if plan.ActiveTheme != nil && !plan.ActiveTheme.Changed {
+		printSectionHeader(stdout, &printed, "Unchanged")
+		fmt.Fprintf(stdout, "  %s active-theme %s\n", out.same("="), plan.ActiveTheme.ThemeName)
+	}
+	if plan.VimMode != nil && !plan.VimMode.Changed {
+		printSectionHeader(stdout, &printed, "Unchanged")
+		fmt.Fprintf(stdout, "  %s vim-mode %t\n", out.same("="), plan.VimMode.Enable)
+	}
+	if len(plan.CommunityPluginsToAdd) == 0 {
+		printSectionHeader(stdout, &printed, "Unchanged")
+		fmt.Fprintf(stdout, "  %s community-plugins.json\n", out.same("="))
+	}
+	for _, cp := range plan.PluginSettings {
+		if cp.Skipped || len(cp.Files) > 0 {
+			continue
+		}
+		printSectionHeader(stdout, &printed, "Unchanged")
+		fmt.Fprintf(stdout, "  %s plugin/%s settings\n", out.same("="), cp.PluginID)
+	}
+	if plan.Hotkeys != nil && !plan.Hotkeys.Changed {
+		printSectionHeader(stdout, &printed, "Unchanged")
+		fmt.Fprintf(stdout, "  %s %s\n", out.same("="), relativeTarget(plan, plan.Hotkeys.Target))
+	}
+	for _, cp := range plan.VaultFiles {
+		if cp.Changed {
+			continue
+		}
+		printSectionHeader(stdout, &printed, "Unchanged")
+		fmt.Fprintf(stdout, "  %s %s\n", out.same("="), relativeTarget(plan, cp.Target))
+	}
+}
+
+func printSectionHeader(stdout io.Writer, printed *bool, title string) {
+	if !*printed {
+		fmt.Fprintf(stdout, "\n%s\n", title)
+		*printed = true
+	}
+}
+
+func planSummary(plan Plan) string {
+	changes := plan.ChangeCount()
+	if changes == 0 {
+		return "Plan: no changes"
+	}
+	if changes == 1 {
+		return "Plan: 1 change"
+	}
+	return fmt.Sprintf("Plan: %d changes", changes)
+}
+
+func (p Plan) ChangeCount() int {
+	count := len(p.PluginInstalls) + len(p.CommunityPluginsToAdd)
+	for _, pluginID := range p.CommunityPluginsToAdd {
+		if installPlanned(p.PluginInstalls, pluginID) {
+			count--
+		}
+	}
+	for _, themePlan := range p.Themes {
+		if themePlan.Changed() {
+			count++
+		}
+	}
+	if p.ActiveTheme != nil && p.ActiveTheme.Changed {
+		count++
+	}
+	if p.VimMode != nil && p.VimMode.Changed {
+		count++
+	}
+	for _, cp := range p.PluginSettings {
+		if !cp.Skipped && len(cp.Files) > 0 {
+			count++
+		}
+	}
+	if p.Hotkeys != nil && p.Hotkeys.Changed {
+		count++
+	}
+	for _, cp := range p.VaultFiles {
+		if cp.Changed {
+			count++
+		}
+	}
+	return count
+}
+
+func installPlanned(plans []install.Plan, pluginID string) bool {
+	for _, p := range plans {
+		if p.PluginID == pluginID {
+			return true
+		}
+	}
+	return false
+}
+
+func fileCount(count int) string {
+	if count == 1 {
+		return "1 file"
+	}
+	return fmt.Sprintf("%d files", count)
+}
+
+func relativeTarget(plan Plan, target string) string {
+	rel, err := filepath.Rel(plan.VaultPath, target)
+	if err != nil || strings.HasPrefix(rel, ".."+string(filepath.Separator)) || rel == ".." {
+		return target
+	}
+	return rel
+}
+
+type textStyle struct {
+	enabled bool
+}
+
+func newStyle(w io.Writer) textStyle {
+	if os.Getenv("NO_COLOR") != "" {
+		return textStyle{}
+	}
+	file, ok := w.(*os.File)
+	if !ok {
+		return textStyle{}
+	}
+	info, err := file.Stat()
+	if err != nil || info.Mode()&os.ModeCharDevice == 0 {
+		return textStyle{}
+	}
+	return textStyle{enabled: true}
+}
+
+func (s textStyle) heading(value string) string { return s.wrap("1", value) }
+func (s textStyle) add(value string) string     { return s.wrap("32", value) }
+func (s textStyle) change(value string) string  { return s.wrap("33", value) }
+func (s textStyle) same(value string) string    { return s.wrap("2", value) }
+func (s textStyle) warn(value string) string    { return s.wrap("31", value) }
+
+func (s textStyle) wrap(code string, value string) string {
+	if !s.enabled {
+		return value
+	}
+	return "\x1b[" + code + "m" + value + "\x1b[0m"
 }
 
 func cleanPath(path string) string {

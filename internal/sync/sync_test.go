@@ -35,7 +35,16 @@ func TestRenderPlanIncludesVaultFiles(t *testing.T) {
 		},
 	}, false, &stdout, &bytes.Buffer{})
 
-	if !strings.Contains(stdout.String(), "vault file: will copy /tmp/source.vimrc to /tmp/vault/.obsidian.vimrc") {
+	if !strings.Contains(stdout.String(), "Plan: 1 change") {
+		t.Fatalf("unexpected output: %q", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "Files To Copy") {
+		t.Fatalf("unexpected output: %q", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "~ vault-file") {
+		t.Fatalf("unexpected output: %q", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "/tmp/vault/.obsidian.vimrc") {
 		t.Fatalf("unexpected output: %q", stdout.String())
 	}
 }

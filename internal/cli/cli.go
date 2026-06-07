@@ -54,7 +54,7 @@ func Run(ctx context.Context, args []string, stdout io.Writer, stderr io.Writer)
 		return err
 	}
 	if planOnly {
-		syncer.RenderPlan(plan, true, stdout, stderr)
+		syncer.RenderPlan(plan, *verbose, stdout, stderr)
 	} else if *verbose {
 		syncer.RenderPlan(plan, true, stdout, stderr)
 	}
