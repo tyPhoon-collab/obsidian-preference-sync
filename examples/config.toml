@@ -20,7 +20,6 @@ plugins = [
   "obsidian-vimrc-support",
   "templater-obsidian",
   "obsidian-meta-bind-plugin",
-  "editing-toolbar",
   "obsidian-advanced-uri",
   "spacekeys",
 ]
