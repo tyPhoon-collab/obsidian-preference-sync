@@ -25,10 +25,10 @@ plugins = [
 ]
 
 themes = [
-  "Primary",
+  "Obsidian gruvbox",
 ]
 
-active_theme = "Primary"
+active_theme = "Obsidian gruvbox"
 
 vim_mode = true
 
