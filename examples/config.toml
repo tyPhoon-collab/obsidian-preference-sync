@@ -18,7 +18,6 @@ plugins = [
   "various-complements",
   "notebook-navigator",
   "obsidian-vimrc-support",
-  "templater-obsidian",
   "obsidian-meta-bind-plugin",
   "obsidian-advanced-uri",
   "spacekeys",
