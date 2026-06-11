@@ -42,6 +42,7 @@ source = "vault-files/spacekeys.yml"
 target = "spacekeys.yml"
 
 [plugin_settings]
+obsidian-auto-link-title = "plugin-settings/obsidian-auto-link-title"
 obsidian-linter = "plugin-settings/obsidian-linter"
 various-complements = "plugin-settings/various-complements"
 notebook-navigator = "plugin-settings/notebook-navigator"
