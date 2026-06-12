@@ -32,14 +32,29 @@ brew tap tyPhoon-collab/tap
 brew install obsidian-preference-sync
 ```
 
+Or install with mise via the GitHub release binary:
+
 ```sh
-obsidian-preference-sync \
-  --vault "$HOME/Documents/Obsidian Vault" \
-  --config ./examples/config.toml \
-  --dry-run
+mise use -g ubi:tyPhoon-collab/obsidian-preference-sync
+```
+
+Quick start with the example preference pack:
+
+```sh
+git clone --depth=1 https://github.com/tyPhoon-collab/obsidian-preference-sync.git
+cd obsidian-preference-sync
 
 obsidian-preference-sync \
-  --vault "$HOME/Documents/Obsidian Vault" \
+  --vault /path/to/your/vault \
+  --config ./examples/config.toml \
+  --dry-run
+```
+
+If the dry run looks good, apply it:
+
+```sh
+obsidian-preference-sync \
+  --vault /path/to/your/vault \
   --config ./examples/config.toml
 ```
 
