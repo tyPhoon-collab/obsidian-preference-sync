@@ -68,6 +68,35 @@ vim_mode = true
 	}
 }
 
+func TestLoadFonts(t *testing.T) {
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.toml")
+	if err := os.WriteFile(configPath, []byte(`
+plugins = []
+
+[fonts]
+interface = "Maple Mono NF CN"
+text = "Maple Mono NF CN"
+monospace = "Maple Mono NF CN"
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := Load(configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Fonts.Interface != "Maple Mono NF CN" {
+		t.Fatalf("got interface font %q", cfg.Fonts.Interface)
+	}
+	if cfg.Fonts.Text != "Maple Mono NF CN" {
+		t.Fatalf("got text font %q", cfg.Fonts.Text)
+	}
+	if cfg.Fonts.Monospace != "Maple Mono NF CN" {
+		t.Fatalf("got monospace font %q", cfg.Fonts.Monospace)
+	}
+}
+
 func TestLoadResolvesVaultFilesSourceFromConfigDir(t *testing.T) {
 	dir := t.TempDir()
 	configPath := filepath.Join(dir, "config.toml")
@@ -111,6 +140,13 @@ func TestValidateRequiresActiveThemeInThemes(t *testing.T) {
 	cfg := Config{Themes: []string{"Minimal"}, ActiveTheme: "Primary"}
 	if err := cfg.Validate(); err == nil {
 		t.Fatal("expected active theme validation error")
+	}
+}
+
+func TestValidateRejectsFontWhitespace(t *testing.T) {
+	cfg := Config{Fonts: Fonts{Text: " Maple Mono NF CN"}}
+	if err := cfg.Validate(); err == nil {
+		t.Fatal("expected font whitespace validation error")
 	}
 }
 

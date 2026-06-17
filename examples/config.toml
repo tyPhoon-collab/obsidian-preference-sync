@@ -29,6 +29,11 @@ themes = [
 
 active_theme = "Obsidian gruvbox"
 
+[fonts]
+interface = "Maple Mono NF CN"
+text = "Maple Mono NF CN"
+monospace = "Maple Mono NF CN"
+
 vim_mode = true
 
 hotkeys = "obsidian-settings/hotkeys.json"

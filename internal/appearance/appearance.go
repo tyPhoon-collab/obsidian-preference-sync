@@ -16,6 +16,24 @@ type Plan struct {
 	Changed    bool
 }
 
+type FontChange struct {
+	Name  string
+	Key   string
+	Value string
+}
+
+type Fonts struct {
+	Interface string
+	Text      string
+	Monospace string
+}
+
+type FontPlan struct {
+	SourcePath string
+	Fonts      Fonts
+	Changes    []FontChange
+}
+
 func BuildPlan(v vault.Vault, themeName string) (Plan, error) {
 	path := filepath.Join(v.ObsidianDir, "appearance.json")
 	current, err := readAppearance(path)
@@ -29,6 +47,24 @@ func BuildPlan(v vault.Vault, themeName string) (Plan, error) {
 	}, nil
 }
 
+func BuildFontPlan(v vault.Vault, fonts Fonts) (FontPlan, error) {
+	path := filepath.Join(v.ObsidianDir, "appearance.json")
+	current, err := readAppearance(path)
+	if err != nil {
+		return FontPlan{}, err
+	}
+	plan := FontPlan{
+		SourcePath: path,
+		Fonts:      fonts,
+	}
+	for _, change := range fontChanges(fonts) {
+		if current[change.Key] != change.Value {
+			plan.Changes = append(plan.Changes, change)
+		}
+	}
+	return plan, nil
+}
+
 func Apply(plan Plan) error {
 	if !plan.Changed {
 		return nil
@@ -39,6 +75,38 @@ func Apply(plan Plan) error {
 	}
 	current["cssTheme"] = plan.ThemeName
 	return fileutil.WriteJSONAtomic(plan.SourcePath, current, 0o644)
+}
+
+func ApplyFonts(plan FontPlan) error {
+	if !plan.Changed() {
+		return nil
+	}
+	current, err := readAppearance(plan.SourcePath)
+	if err != nil {
+		return err
+	}
+	for _, change := range fontChanges(plan.Fonts) {
+		current[change.Key] = change.Value
+	}
+	return fileutil.WriteJSONAtomic(plan.SourcePath, current, 0o644)
+}
+
+func (p FontPlan) Changed() bool {
+	return len(p.Changes) > 0
+}
+
+func fontChanges(fonts Fonts) []FontChange {
+	changes := []FontChange{}
+	if fonts.Interface != "" {
+		changes = append(changes, FontChange{Name: "interface-font", Key: "interfaceFontFamily", Value: fonts.Interface})
+	}
+	if fonts.Text != "" {
+		changes = append(changes, FontChange{Name: "text-font", Key: "textFontFamily", Value: fonts.Text})
+	}
+	if fonts.Monospace != "" {
+		changes = append(changes, FontChange{Name: "monospace-font", Key: "monospaceFontFamily", Value: fonts.Monospace})
+	}
+	return changes
 }
 
 func readAppearance(path string) (map[string]any, error) {

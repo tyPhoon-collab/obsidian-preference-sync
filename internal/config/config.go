@@ -14,10 +14,21 @@ type Config struct {
 	Plugins        []string          `toml:"plugins"`
 	Themes         []string          `toml:"themes"`
 	ActiveTheme    string            `toml:"active_theme"`
+	Fonts          Fonts             `toml:"fonts"`
 	VimMode        *bool             `toml:"vim_mode"`
 	Hotkeys        string            `toml:"hotkeys"`
 	VaultFiles     []FileCopy        `toml:"vault_files"`
 	PluginSettings map[string]string `toml:"plugin_settings"`
+}
+
+type Fonts struct {
+	Interface string `toml:"interface"`
+	Text      string `toml:"text"`
+	Monospace string `toml:"monospace"`
+}
+
+func (f Fonts) Empty() bool {
+	return f.Interface == "" && f.Text == "" && f.Monospace == ""
 }
 
 type FileCopy struct {
@@ -88,6 +99,15 @@ func (c Config) Validate() error {
 	}
 	if c.ActiveTheme != "" && !seenThemes[c.ActiveTheme] {
 		return fmt.Errorf("active_theme %q must also be listed in themes", c.ActiveTheme)
+	}
+	for name, value := range map[string]string{
+		"interface": c.Fonts.Interface,
+		"text":      c.Fonts.Text,
+		"monospace": c.Fonts.Monospace,
+	} {
+		if strings.TrimSpace(value) != value {
+			return fmt.Errorf("fonts.%s has leading or trailing whitespace", name)
+		}
 	}
 	for id, source := range c.PluginSettings {
 		if !ValidPluginID(id) {

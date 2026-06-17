@@ -34,6 +34,7 @@ type Plan struct {
 	PluginInstalls        []install.Plan
 	Themes                []theme.Plan
 	ActiveTheme           *appearance.Plan
+	Fonts                 *appearance.FontPlan
 	VimMode               *appsettings.VimModePlan
 	CommunityPluginsToAdd []string
 	PluginSettings        []settings.CopyPlan
@@ -52,6 +53,9 @@ func (p Plan) Changed() bool {
 		}
 	}
 	if p.ActiveTheme != nil && p.ActiveTheme.Changed {
+		return true
+	}
+	if p.Fonts != nil && p.Fonts.Changed() {
 		return true
 	}
 	if p.VimMode != nil && p.VimMode.Changed {
@@ -133,6 +137,17 @@ func BuildPlan(ctx context.Context, opts Options) (Plan, config.Config, vault.Va
 			return Plan{}, config.Config{}, vault.Vault{}, err
 		}
 		plan.ActiveTheme = &p
+	}
+	if !cfg.Fonts.Empty() {
+		p, err := appearance.BuildFontPlan(v, appearance.Fonts{
+			Interface: cfg.Fonts.Interface,
+			Text:      cfg.Fonts.Text,
+			Monospace: cfg.Fonts.Monospace,
+		})
+		if err != nil {
+			return Plan{}, config.Config{}, vault.Vault{}, err
+		}
+		plan.Fonts = &p
 	}
 	if cfg.VimMode != nil {
 		p, err := appsettings.BuildVimModePlan(v, *cfg.VimMode)
@@ -235,6 +250,15 @@ func Apply(ctx context.Context, plan Plan, cfg config.Config, v vault.Vault, ver
 		printSectionHeader(stdout, &printedObsidian, "Obsidian Settings")
 		fmt.Fprintf(stdout, "  %s %-14s %s\n", out.change("~"), "active-theme", plan.ActiveTheme.ThemeName)
 		if err := appearance.Apply(*plan.ActiveTheme); err != nil {
+			return err
+		}
+	}
+	if plan.Fonts != nil && plan.Fonts.Changed() {
+		printSectionHeader(stdout, &printedObsidian, "Obsidian Settings")
+		for _, change := range plan.Fonts.Changes {
+			fmt.Fprintf(stdout, "  %s %-14s %s\n", out.change("~"), change.Name, change.Value)
+		}
+		if err := appearance.ApplyFonts(*plan.Fonts); err != nil {
 			return err
 		}
 	}
@@ -364,6 +388,12 @@ func RenderPlan(plan Plan, verbose bool, stdout io.Writer, stderr io.Writer) {
 			fmt.Fprintf(stdout, "  %s %-14s %s\n", out.change("~"), "active-theme", plan.ActiveTheme.ThemeName)
 		}
 	}
+	if plan.Fonts != nil {
+		for _, change := range plan.Fonts.Changes {
+			printSectionHeader(stdout, &printedObsidian, "Obsidian Settings")
+			fmt.Fprintf(stdout, "  %s %-14s %s\n", out.change("~"), change.Name, change.Value)
+		}
+	}
 	if plan.VimMode != nil {
 		if plan.VimMode.Changed {
 			printSectionHeader(stdout, &printedObsidian, "Obsidian Settings")
@@ -420,6 +450,10 @@ func printUnchanged(plan Plan, stdout io.Writer, out textStyle) {
 	if plan.ActiveTheme != nil && !plan.ActiveTheme.Changed {
 		printSectionHeader(stdout, &printed, "Unchanged")
 		fmt.Fprintf(stdout, "  %s active-theme %s\n", out.same("="), plan.ActiveTheme.ThemeName)
+	}
+	if plan.Fonts != nil && !plan.Fonts.Changed() {
+		printSectionHeader(stdout, &printed, "Unchanged")
+		fmt.Fprintf(stdout, "  %s fonts\n", out.same("="))
 	}
 	if plan.VimMode != nil && !plan.VimMode.Changed {
 		printSectionHeader(stdout, &printed, "Unchanged")
@@ -492,6 +526,9 @@ func (p Plan) ChangeCount() int {
 	}
 	if p.ActiveTheme != nil && p.ActiveTheme.Changed {
 		count++
+	}
+	if p.Fonts != nil {
+		count += len(p.Fonts.Changes)
 	}
 	if p.VimMode != nil && p.VimMode.Changed {
 		count++

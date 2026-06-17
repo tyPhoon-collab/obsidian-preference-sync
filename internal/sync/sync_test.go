@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"obsidian-preference-sync/internal/appearance"
 	"obsidian-preference-sync/internal/vaultfiles"
 )
 
@@ -45,6 +46,31 @@ func TestRenderPlanIncludesVaultFiles(t *testing.T) {
 		t.Fatalf("unexpected output: %q", stdout.String())
 	}
 	if !strings.Contains(stdout.String(), "/tmp/vault/.obsidian.vimrc") {
+		t.Fatalf("unexpected output: %q", stdout.String())
+	}
+}
+
+func TestRenderPlanIncludesFonts(t *testing.T) {
+	var stdout bytes.Buffer
+	RenderPlan(Plan{
+		Fonts: &appearance.FontPlan{
+			Fonts: appearance.Fonts{Text: "Maple Mono NF CN"},
+			Changes: []appearance.FontChange{
+				{Name: "text-font", Key: "textFontFamily", Value: "Maple Mono NF CN"},
+			},
+		},
+	}, false, &stdout, &bytes.Buffer{})
+
+	if !strings.Contains(stdout.String(), "Plan: 1 change") {
+		t.Fatalf("unexpected output: %q", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "Obsidian Settings") {
+		t.Fatalf("unexpected output: %q", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "~ text-font") {
+		t.Fatalf("unexpected output: %q", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "Maple Mono NF CN") {
 		t.Fatalf("unexpected output: %q", stdout.String())
 	}
 }

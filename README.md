@@ -81,6 +81,8 @@ Relative `plugin_settings` paths are resolved from the config file directory. `~
 
 `themes` installs or updates only the named community themes. Theme files are copied to `.obsidian/themes/<theme-name>/`.
 `active_theme` is optional. When set, it must also be listed in `themes`, and only the `cssTheme` field in `.obsidian/appearance.json` is updated.
+`[fonts]` is optional. `interface`, `text`, and `monospace` update only `interfaceFontFamily`, `textFontFamily`, and `monospaceFontFamily` in `.obsidian/appearance.json`.
+Font files are not installed by this tool; install the same fonts on each machine.
 `vim_mode` is optional. When set, only the `vimMode` field in `.obsidian/app.json` is updated.
 
 When copying plugin settings, these names are excluded:
