@@ -49,6 +49,7 @@ target = "spacekeys.yml"
 [plugin_settings]
 obsidian-auto-link-title = "plugin-settings/obsidian-auto-link-title"
 obsidian-linter = "plugin-settings/obsidian-linter"
+easy-typing-obsidian = "plugin-settings/easy-typing-obsidian"
 various-complements = "plugin-settings/various-complements"
 notebook-navigator = "plugin-settings/notebook-navigator"
 spacekeys = "plugin-settings/spacekeys"

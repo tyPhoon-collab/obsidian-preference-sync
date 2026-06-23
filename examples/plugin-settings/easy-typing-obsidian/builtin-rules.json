@@ -1,0 +1,171 @@
+[
+  {
+    "id": "builtin-autopair-input",
+    "trigger": "[（《「『“”‘’《]",
+    "replacement": "const p={'【':'【$0】','（':'（$0）','《':'《$0》','「':'「$0」','『':'『$0』','“':'“$0”','”':'“$0”','‘':'‘$0’','’':'‘$0’','《':'《$0》'}; return p[leftMatches[0]];",
+    "options": "rF",
+    "priority": 10,
+    "description": "全角括弧/引用符の入力時に自動補完"
+  },
+  {
+    "id": "builtin-autopair-jump",
+    "trigger": "《》|“”|““|‘’|‘‘|（）",
+    "trigger_right": "》|”|’|）",
+    "replacement": "const map = {\n  \"《》\": [\"》\", \"《》\"],\n  \"（）\": [\"）\", \"（）\"],\n  \"“”\": [\"”\", \"“”\"],\n  \"““\": [\"”\", \"“”\"],\n  \"‘’\": [\"’\", \"‘’\"],\n  \"‘‘\": [\"’\", \"‘’\"]\n}\nif(map[leftMatches[0]][0]==rightMatches[0]){\n  return map[leftMatches[0]][1];\n}\nreturn undefined;",
+    "options": "rF",
+    "priority": 5,
+    "description": "閉じペア記号の入力時に自動スキップして重複を防止"
+  },
+  {
+    "id": "builtin-autopair-delete",
+    "trigger": "[【（《「『“‘]",
+    "trigger_right": "[】）》」』”’]",
+    "replacement": "const p={'【':'】','（':'）','《':'》','「':'」','『':'』','“':'”','‘':'’'}; return p[leftMatches[0]]===rightMatches[0] ? '' : undefined;",
+    "options": "drF",
+    "priority": 10,
+    "description": "全角括弧/引用符の削除時にペアごと削除"
+  },
+  {
+    "id": "builtin-conv-backtick",
+    "trigger": "··",
+    "replacement": "`$0`",
+    "priority": 10,
+    "description": "中点 ·· の連続入力でインラインコードに変換"
+  },
+  {
+    "id": "builtin-conv-codeblock",
+    "trigger": "(?<=^|\\n)([ \\t]*)`·",
+    "trigger_right": "`",
+    "replacement": "[[1]]```$0\n[[1]]```",
+    "options": "r",
+    "priority": 10,
+    "description": "インラインコード内で · を入力するとコードブロックにアップグレード"
+  },
+  {
+    "id": "builtin-conv-formula",
+    "trigger": "(￥￥|¥¥|\\$￥|\\$¥|\\$\\$)",
+    "trigger_right": "\\$?",
+    "replacement": "return rightMatches[0] === '$' ? '$$\\n$0\\n$$' : '$$0$';",
+    "options": "rF",
+    "priority": 10,
+    "description": "￥/$ の組み合わせでインラインまたはブロック数式に変換"
+  },
+  {
+    "id": "builtin-conv-linestart",
+    "trigger": "(^|\\n)([》、])",
+    "replacement": "const m = {'》': '[[1]]> $0', '、': '[[1]]/$0'}; return m[leftMatches[2]];",
+    "options": "rF",
+    "priority": 10,
+    "description": "行頭の 》 → 引用マーカー、、 → スラッシュ"
+  },
+  {
+    "id": "builtin-conv-hw2fw",
+    "trigger": "([一-龥぀-ゟ゠-ヿ가-힯])([,.:?!;(])",
+    "trigger_right": "\\)?",
+    "replacement": "const m={',':'，','.':'。','?':'？','!':'！',':':'：',';':'；','(':'（$0）'}; return leftMatches[1] + m[leftMatches[2]];",
+    "options": "rF",
+    "priority": 15,
+    "description": "CJK文字の後の半角句読点を全角に変換"
+  },
+  {
+    "id": "builtin-fw2hw-double",
+    "trigger": "([。！；，：？》｜（《])\\1",
+    "trigger_right": "[）》]?",
+    "replacement": "const p={'（':['）','($0)'],'《':['》','<$0']};\nconst m={'。':'.$0','！':'!$0','；':';$0','，':',$0','：':':$0','？':'?$0','》':'>$0','｜':'|$0','（':'($0)','《':'<$0'};\nconst c=leftMatches[1],r=rightMatches[0]||'',e=p[c]; \nreturn e&&e[0]===r?e[1]:m[c];",
+    "options": "rF",
+    "priority": 3,
+    "description": "同じ全角句読点を2回入力すると半角に変換"
+  },
+  {
+    "id": "builtin-del-inline-formula",
+    "trigger": "$",
+    "trigger_right": "$",
+    "replacement": "",
+    "options": "d",
+    "priority": 30,
+    "description": "インライン数式 $...$ のペアを削除"
+  },
+  {
+    "id": "builtin-del-highlight",
+    "trigger": "==",
+    "trigger_right": "==",
+    "replacement": "",
+    "options": "d",
+    "priority": 30,
+    "description": "ハイライト ==...== のペアを削除"
+  },
+  {
+    "id": "builtin-del-block-formula",
+    "trigger": "$$\n",
+    "trigger_right": "\n$$",
+    "replacement": "",
+    "options": "d",
+    "priority": 30,
+    "description": "ブロック数式 $$...$$ のペアを削除"
+  },
+  {
+    "id": "builtin-del-codeblock",
+    "trigger": "(?<=^|\\n)([ \\t]*)```",
+    "trigger_right": "[ \\t]*\\n([ \\t]*)```",
+    "replacement": "[[1]]",
+    "options": "dr",
+    "priority": 30,
+    "description": "空のコードブロックをすばやく削除"
+  },
+  {
+    "id": "builtin-del-wikilink",
+    "trigger": " ?!?\\[\\[[^\\n\\[\\]]*\\]\\]",
+    "replacement": "",
+    "options": "dr",
+    "priority": 30,
+    "description": "ウィキリンクと埋め込み(![[]])をすばやく削除"
+  },
+  {
+    "id": "builtin-sel-wrap-backtick",
+    "trigger": "·",
+    "replacement": "`${0:${SEL}}`",
+    "options": "s",
+    "priority": 40,
+    "description": "· で選択テキストをバッククォートで囲む"
+  },
+  {
+    "id": "builtin-sel-wrap-symbols",
+    "trigger": "【¥￥",
+    "replacement": "const m={'¥': ['$', '$'], '￥': ['$', '$'], '【': ['[', ']']}; \nreturn m[key][0] + '${0:${SEL}}' + m[key][1];",
+    "options": "sF",
+    "priority": 40,
+    "description": "選択テキストを【/¥/￥で []/$$で囲む"
+  },
+  {
+    "id": "builtin-sel-wrap-quotes",
+    "trigger": "“”‘’",
+    "replacement": "const m={'“': ['“','”'], '”': ['“','”'], '‘': ['‘','’'], '’': ['‘','’']}; return m[key][0] + '${0:${SEL}}' + m[key][1];",
+    "options": "sF",
+    "priority": 40,
+    "description": "選択テキストを全角引用符で囲む"
+  },
+  {
+    "id": "builtin-sel-wrap-cjk-brackets",
+    "trigger": "《（",
+    "replacement": "const m={'《': ['《','》'], '（': ['（','）']}; return m[key][0] + '${0:${SEL}}' + m[key][1];",
+    "options": "sF",
+    "priority": 40,
+    "description": "選択テキストを《》または（）括弧で囲む"
+  },
+  {
+    "id": "builtin-quote-convert",
+    "trigger": "((?:^|\\n)\\s*>*) ?[>》]",
+    "replacement": "[[1]]> $0",
+    "options": "r",
+    "priority": 50,
+    "description": "> または 》を Markdown 引用マーカーに変換"
+  },
+  {
+    "id": "builtin-quote-space",
+    "trigger": "((?:^|\\n)\\s*>+)([^ >》]+)",
+    "replacement": "[[1]] [[2]]$0",
+    "options": "r",
+    "priority": 50,
+    "description": "引用マーカー > の後にスペースを自動挿入"
+  }
+]
