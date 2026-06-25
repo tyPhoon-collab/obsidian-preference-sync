@@ -133,5 +133,13 @@
   ],
   "editor:toggle-comments": [],
   "easy-typing-obsidian:easy-typing-format-switch": [],
-  "easy-typing-obsidian:easy-typing-toggle-comment": []
+  "easy-typing-obsidian:easy-typing-toggle-comment": [],
+  "various-complements:show-suggestions": [
+    {
+      "modifiers": [
+        "Mod"
+      ],
+      "key": "."
+    }
+  ]
 }
