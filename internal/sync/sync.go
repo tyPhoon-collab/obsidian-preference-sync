@@ -173,6 +173,13 @@ func BuildPlan(ctx context.Context, opts Options) (Plan, config.Config, vault.Va
 		}
 		plan.ShowLineNumber = &p
 	}
+	unmanaged, err := unmanagedEnabledPlugins(v, cfg.Plugins)
+	if err != nil {
+		return Plan{}, config.Config{}, vault.Vault{}, err
+	}
+	for _, pluginID := range unmanaged {
+		plan.Warnings = append(plan.Warnings, fmt.Sprintf("enabled plugin %q is not listed in config plugins; disable it in Obsidian or add it to config", pluginID))
+	}
 
 	added, _, err := v.UpsertEnabledPlugins(cfg.Plugins, true)
 	if err != nil {
@@ -233,6 +240,7 @@ func BuildPlan(ctx context.Context, opts Options) (Plan, config.Config, vault.Va
 func Apply(ctx context.Context, plan Plan, cfg config.Config, v vault.Vault, verbose bool, stdout io.Writer) error {
 	out := newStyle(stdout)
 	fmt.Fprintf(stdout, "%s\n", out.heading(applySummary(plan)))
+	printWarnings(plan, stdout)
 	if !plan.Changed() {
 		return nil
 	}
@@ -394,9 +402,7 @@ func RenderPlan(plan Plan, verbose bool, stdout io.Writer, stderr io.Writer) {
 		fmt.Fprintf(stdout, "Config %s\n", plan.ConfigPath)
 	}
 
-	for _, warning := range plan.Warnings {
-		fmt.Fprintf(stderr, "%s warning: %s\n", errStyle.warn("!"), warning)
-	}
+	printWarningsWithStyle(plan, stderr, errStyle)
 
 	printedPlugins := false
 	for _, p := range plan.PluginInstalls {
@@ -568,6 +574,16 @@ func printSectionHeader(stdout io.Writer, printed *bool, title string) {
 	}
 }
 
+func printWarnings(plan Plan, stdout io.Writer) {
+	printWarningsWithStyle(plan, stdout, newStyle(stdout))
+}
+
+func printWarningsWithStyle(plan Plan, w io.Writer, style textStyle) {
+	for _, warning := range plan.Warnings {
+		fmt.Fprintf(w, "%s warning: %s\n", style.warn("!"), warning)
+	}
+}
+
 func planSummary(plan Plan) string {
 	changes := plan.ChangeCount()
 	if changes == 0 {
@@ -642,6 +658,25 @@ func installPlanned(plans []install.Plan, pluginID string) bool {
 		}
 	}
 	return false
+}
+
+func unmanagedEnabledPlugins(v vault.Vault, configured []string) ([]string, error) {
+	enabled, err := v.ReadEnabledPlugins()
+	if err != nil {
+		return nil, err
+	}
+	configuredSet := map[string]bool{}
+	for _, pluginID := range configured {
+		configuredSet[pluginID] = true
+	}
+	var unmanaged []string
+	for _, pluginID := range enabled {
+		if !configuredSet[pluginID] {
+			unmanaged = append(unmanaged, pluginID)
+		}
+	}
+	sort.Strings(unmanaged)
+	return unmanaged, nil
 }
 
 func fileCount(count int) string {
