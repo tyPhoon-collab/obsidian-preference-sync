@@ -40,6 +40,7 @@ type Plan struct {
 	CommunityPluginsToAdd []string
 	PluginSettings        []settings.CopyPlan
 	Hotkeys               *obsidiansettings.CopyPlan
+	ObsidianSettings      []obsidiansettings.CopyPlan
 	VaultFiles            []vaultfiles.CopyPlan
 	Warnings              []string
 }
@@ -72,6 +73,11 @@ func (p Plan) Changed() bool {
 	}
 	if p.Hotkeys != nil && p.Hotkeys.Changed {
 		return true
+	}
+	for _, cp := range p.ObsidianSettings {
+		if cp.Changed {
+			return true
+		}
 	}
 	for _, cp := range p.VaultFiles {
 		if cp.Changed {
@@ -197,6 +203,21 @@ func BuildPlan(ctx context.Context, opts Options) (Plan, config.Config, vault.Va
 			return Plan{}, config.Config{}, vault.Vault{}, err
 		}
 		plan.Hotkeys = &cp
+	}
+	for _, setting := range []struct {
+		name   string
+		source string
+	}{
+		{name: "command-palette", source: cfg.CommandPalette},
+	} {
+		if setting.source == "" {
+			continue
+		}
+		cp, err := obsidiansettings.Plan(v, setting.name, setting.source)
+		if err != nil {
+			return Plan{}, config.Config{}, vault.Vault{}, err
+		}
+		plan.ObsidianSettings = append(plan.ObsidianSettings, cp)
 	}
 	for _, file := range cfg.VaultFiles {
 		cp, err := vaultfiles.Plan(v, file)
@@ -331,6 +352,19 @@ func Apply(ctx context.Context, plan Plan, cfg config.Config, v vault.Vault, ver
 			return err
 		}
 	}
+	for _, cp := range plan.ObsidianSettings {
+		if !cp.Changed {
+			continue
+		}
+		printSectionHeader(stdout, &printedFiles, "Files To Copy")
+		fmt.Fprintf(stdout, "  %s %-24s %s\n", out.change("~"), cp.Name, relativeTarget(plan, cp.Target))
+		if verbose {
+			fmt.Fprintf(stdout, "    source %s\n", cp.Source)
+		}
+		if err := obsidiansettings.Apply(cp, false); err != nil {
+			return err
+		}
+	}
 	for _, cp := range plan.VaultFiles {
 		if !cp.Changed {
 			continue
@@ -448,6 +482,15 @@ func RenderPlan(plan Plan, verbose bool, stdout io.Writer, stderr io.Writer) {
 			}
 		}
 	}
+	for _, cp := range plan.ObsidianSettings {
+		if cp.Changed {
+			printSectionHeader(stdout, &printedFiles, "Files To Copy")
+			fmt.Fprintf(stdout, "  %s %-24s %s\n", out.change("~"), cp.Name, relativeTarget(plan, cp.Target))
+			if verbose {
+				fmt.Fprintf(stdout, "    source %s\n", cp.Source)
+			}
+		}
+	}
 	for _, cp := range plan.VaultFiles {
 		if cp.Changed {
 			printSectionHeader(stdout, &printedFiles, "Files To Copy")
@@ -501,6 +544,13 @@ func printUnchanged(plan Plan, stdout io.Writer, out textStyle) {
 	if plan.Hotkeys != nil && !plan.Hotkeys.Changed {
 		printSectionHeader(stdout, &printed, "Unchanged")
 		fmt.Fprintf(stdout, "  %s %s\n", out.same("="), relativeTarget(plan, plan.Hotkeys.Target))
+	}
+	for _, cp := range plan.ObsidianSettings {
+		if cp.Changed {
+			continue
+		}
+		printSectionHeader(stdout, &printed, "Unchanged")
+		fmt.Fprintf(stdout, "  %s %s\n", out.same("="), relativeTarget(plan, cp.Target))
 	}
 	for _, cp := range plan.VaultFiles {
 		if cp.Changed {
@@ -571,6 +621,11 @@ func (p Plan) ChangeCount() int {
 	}
 	if p.Hotkeys != nil && p.Hotkeys.Changed {
 		count++
+	}
+	for _, cp := range p.ObsidianSettings {
+		if cp.Changed {
+			count++
+		}
 	}
 	for _, cp := range p.VaultFiles {
 		if cp.Changed {

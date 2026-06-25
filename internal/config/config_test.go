@@ -49,6 +49,26 @@ hotkeys = "obsidian-settings/hotkeys.json"
 	}
 }
 
+func TestLoadResolvesTopLevelCommandPaletteFromConfigDir(t *testing.T) {
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.toml")
+	if err := os.WriteFile(configPath, []byte(`
+plugins = []
+command_palette = "obsidian-settings/command-palette.json"
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := Load(configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := filepath.Join(dir, "obsidian-settings", "command-palette.json")
+	if cfg.CommandPalette != want {
+		t.Fatalf("got %q, want %q", cfg.CommandPalette, want)
+	}
+}
+
 func TestLoadVimMode(t *testing.T) {
 	dir := t.TempDir()
 	configPath := filepath.Join(dir, "config.toml")
@@ -101,6 +121,10 @@ func TestLoadExampleConfigIncludesAppSettings(t *testing.T) {
 	wantHotkeys := filepath.Join("..", "..", "examples", "obsidian-settings", "hotkeys.json")
 	if cfg.Hotkeys != wantHotkeys {
 		t.Fatalf("got Hotkeys %q, want %q", cfg.Hotkeys, wantHotkeys)
+	}
+	wantCommandPalette := filepath.Join("..", "..", "examples", "obsidian-settings", "command-palette.json")
+	if cfg.CommandPalette != wantCommandPalette {
+		t.Fatalf("got CommandPalette %q, want %q", cfg.CommandPalette, wantCommandPalette)
 	}
 }
 

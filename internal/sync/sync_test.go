@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"obsidian-preference-sync/internal/appearance"
+	"obsidian-preference-sync/internal/obsidiansettings"
 	"obsidian-preference-sync/internal/vaultfiles"
 )
 
@@ -71,6 +72,34 @@ func TestRenderPlanIncludesFonts(t *testing.T) {
 		t.Fatalf("unexpected output: %q", stdout.String())
 	}
 	if !strings.Contains(stdout.String(), "Maple Mono NF CN") {
+		t.Fatalf("unexpected output: %q", stdout.String())
+	}
+}
+
+func TestRenderPlanIncludesObsidianSettings(t *testing.T) {
+	var stdout bytes.Buffer
+	RenderPlan(Plan{
+		VaultPath: "/tmp/vault",
+		ObsidianSettings: []obsidiansettings.CopyPlan{
+			{
+				Name:    "command-palette",
+				Source:  "/tmp/source/command-palette.json",
+				Target:  "/tmp/vault/.obsidian/command-palette.json",
+				Changed: true,
+			},
+		},
+	}, false, &stdout, &bytes.Buffer{})
+
+	if !strings.Contains(stdout.String(), "Plan: 1 change") {
+		t.Fatalf("unexpected output: %q", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "Files To Copy") {
+		t.Fatalf("unexpected output: %q", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "~ command-palette") {
+		t.Fatalf("unexpected output: %q", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), ".obsidian/command-palette.json") {
 		t.Fatalf("unexpected output: %q", stdout.String())
 	}
 }

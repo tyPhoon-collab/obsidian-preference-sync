@@ -18,6 +18,7 @@ type Config struct {
 	VimMode        *bool             `toml:"vim_mode"`
 	ShowLineNumber *bool             `toml:"show_line_number"`
 	Hotkeys        string            `toml:"hotkeys"`
+	CommandPalette string            `toml:"command_palette"`
 	VaultFiles     []FileCopy        `toml:"vault_files"`
 	PluginSettings map[string]string `toml:"plugin_settings"`
 }
@@ -62,6 +63,13 @@ func Load(path string) (Config, error) {
 			return Config{}, fmt.Errorf("hotkeys: %w", err)
 		}
 		cfg.Hotkeys = expanded
+	}
+	if cfg.CommandPalette != "" {
+		expanded, err := ExpandPath(cfg.CommandPalette, base)
+		if err != nil {
+			return Config{}, fmt.Errorf("command_palette: %w", err)
+		}
+		cfg.CommandPalette = expanded
 	}
 	for i := range cfg.VaultFiles {
 		expanded, err := ExpandPath(cfg.VaultFiles[i].Source, base)

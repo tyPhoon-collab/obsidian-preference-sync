@@ -33,6 +33,7 @@ vim_mode = true
 show_line_number = true
 
 hotkeys = "obsidian-settings/hotkeys.json"
+command_palette = "obsidian-settings/command-palette.json"
 
 [fonts]
 interface = "Maple Mono NF CN"

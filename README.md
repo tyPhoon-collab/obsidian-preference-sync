@@ -77,6 +77,7 @@ For example, export or copy a plugin's settings directory from a tuned vault int
 
 Relative `plugin_settings` paths are resolved from the config file directory. `~/...` is expanded to the current user's home directory.
 `hotkeys` uses the same path resolution rules and copies to `.obsidian/hotkeys.json`.
+`command_palette` uses the same path resolution rules and copies to `.obsidian/command-palette.json`.
 `vault_files` entries copy individual files into vault-relative target paths. Their `source` paths use the same path resolution rules, and their `target` paths must stay inside the vault.
 
 `themes` installs or updates only the named community themes. Theme files are copied to `.obsidian/themes/<theme-name>/`.

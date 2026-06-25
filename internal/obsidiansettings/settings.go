@@ -10,7 +10,8 @@ import (
 )
 
 var targetFiles = map[string]string{
-	"hotkeys": "hotkeys.json",
+	"hotkeys":         "hotkeys.json",
+	"command-palette": "command-palette.json",
 }
 
 type CopyPlan struct {

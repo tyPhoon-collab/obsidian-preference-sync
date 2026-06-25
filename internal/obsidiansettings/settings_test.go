@@ -51,6 +51,35 @@ func TestApplyCopiesHotkeysToObsidianDir(t *testing.T) {
 	}
 }
 
+func TestApplyCopiesCommandPaletteToObsidianDir(t *testing.T) {
+	root := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(root, ".obsidian"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	source := filepath.Join(root, "command-palette.json")
+	if err := os.WriteFile(source, []byte("{\"pinned\":[\"daily-notes\"]}\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	v, err := vault.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cp, err := Plan(v, "command-palette", source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := Apply(cp, false); err != nil {
+		t.Fatal(err)
+	}
+	got, err := os.ReadFile(filepath.Join(root, ".obsidian", "command-palette.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != "{\"pinned\":[\"daily-notes\"]}\n" {
+		t.Fatalf("got %q", got)
+	}
+}
+
 func TestPlanMarksUnchangedHotkeys(t *testing.T) {
 	root := t.TempDir()
 	obsidianDir := filepath.Join(root, ".obsidian")
