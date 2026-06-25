@@ -36,6 +36,7 @@ type Plan struct {
 	ActiveTheme           *appearance.Plan
 	Fonts                 *appearance.FontPlan
 	VimMode               *appsettings.VimModePlan
+	ShowLineNumber        *appsettings.ShowLineNumberPlan
 	CommunityPluginsToAdd []string
 	PluginSettings        []settings.CopyPlan
 	Hotkeys               *obsidiansettings.CopyPlan
@@ -59,6 +60,9 @@ func (p Plan) Changed() bool {
 		return true
 	}
 	if p.VimMode != nil && p.VimMode.Changed {
+		return true
+	}
+	if p.ShowLineNumber != nil && p.ShowLineNumber.Changed {
 		return true
 	}
 	for _, cp := range p.PluginSettings {
@@ -155,6 +159,13 @@ func BuildPlan(ctx context.Context, opts Options) (Plan, config.Config, vault.Va
 			return Plan{}, config.Config{}, vault.Vault{}, err
 		}
 		plan.VimMode = &p
+	}
+	if cfg.ShowLineNumber != nil {
+		p, err := appsettings.BuildShowLineNumberPlan(v, *cfg.ShowLineNumber)
+		if err != nil {
+			return Plan{}, config.Config{}, vault.Vault{}, err
+		}
+		plan.ShowLineNumber = &p
 	}
 
 	added, _, err := v.UpsertEnabledPlugins(cfg.Plugins, true)
@@ -266,6 +277,13 @@ func Apply(ctx context.Context, plan Plan, cfg config.Config, v vault.Vault, ver
 		printSectionHeader(stdout, &printedObsidian, "Obsidian Settings")
 		fmt.Fprintf(stdout, "  %s %-14s %t\n", out.change("~"), "vim-mode", plan.VimMode.Enable)
 		if err := appsettings.ApplyVimMode(*plan.VimMode); err != nil {
+			return err
+		}
+	}
+	if plan.ShowLineNumber != nil && plan.ShowLineNumber.Changed {
+		printSectionHeader(stdout, &printedObsidian, "Obsidian Settings")
+		fmt.Fprintf(stdout, "  %s %-14s %t\n", out.change("~"), "line-numbers", plan.ShowLineNumber.Enable)
+		if err := appsettings.ApplyShowLineNumber(*plan.ShowLineNumber); err != nil {
 			return err
 		}
 	}
@@ -400,6 +418,12 @@ func RenderPlan(plan Plan, verbose bool, stdout io.Writer, stderr io.Writer) {
 			fmt.Fprintf(stdout, "  %s %-14s %t\n", out.change("~"), "vim-mode", plan.VimMode.Enable)
 		}
 	}
+	if plan.ShowLineNumber != nil {
+		if plan.ShowLineNumber.Changed {
+			printSectionHeader(stdout, &printedObsidian, "Obsidian Settings")
+			fmt.Fprintf(stdout, "  %s %-14s %t\n", out.change("~"), "line-numbers", plan.ShowLineNumber.Enable)
+		}
+	}
 
 	printedFiles := false
 	for _, cp := range plan.PluginSettings {
@@ -458,6 +482,10 @@ func printUnchanged(plan Plan, stdout io.Writer, out textStyle) {
 	if plan.VimMode != nil && !plan.VimMode.Changed {
 		printSectionHeader(stdout, &printed, "Unchanged")
 		fmt.Fprintf(stdout, "  %s vim-mode %t\n", out.same("="), plan.VimMode.Enable)
+	}
+	if plan.ShowLineNumber != nil && !plan.ShowLineNumber.Changed {
+		printSectionHeader(stdout, &printed, "Unchanged")
+		fmt.Fprintf(stdout, "  %s line-numbers %t\n", out.same("="), plan.ShowLineNumber.Enable)
 	}
 	if len(plan.CommunityPluginsToAdd) == 0 {
 		printSectionHeader(stdout, &printed, "Unchanged")
@@ -531,6 +559,9 @@ func (p Plan) ChangeCount() int {
 		count += len(p.Fonts.Changes)
 	}
 	if p.VimMode != nil && p.VimMode.Changed {
+		count++
+	}
+	if p.ShowLineNumber != nil && p.ShowLineNumber.Changed {
 		count++
 	}
 	for _, cp := range p.PluginSettings {

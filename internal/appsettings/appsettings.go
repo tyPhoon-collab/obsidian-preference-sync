@@ -16,6 +16,12 @@ type VimModePlan struct {
 	Changed bool
 }
 
+type ShowLineNumberPlan struct {
+	Path    string
+	Enable  bool
+	Changed bool
+}
+
 func BuildVimModePlan(v vault.Vault, enable bool) (VimModePlan, error) {
 	path := filepath.Join(v.ObsidianDir, "app.json")
 	current, err := readAppSettings(path)
@@ -29,6 +35,19 @@ func BuildVimModePlan(v vault.Vault, enable bool) (VimModePlan, error) {
 	}, nil
 }
 
+func BuildShowLineNumberPlan(v vault.Vault, enable bool) (ShowLineNumberPlan, error) {
+	path := filepath.Join(v.ObsidianDir, "app.json")
+	current, err := readAppSettings(path)
+	if err != nil {
+		return ShowLineNumberPlan{}, err
+	}
+	return ShowLineNumberPlan{
+		Path:    path,
+		Enable:  enable,
+		Changed: current["showLineNumber"] != enable,
+	}, nil
+}
+
 func ApplyVimMode(plan VimModePlan) error {
 	if !plan.Changed {
 		return nil
@@ -38,6 +57,18 @@ func ApplyVimMode(plan VimModePlan) error {
 		return err
 	}
 	current["vimMode"] = plan.Enable
+	return fileutil.WriteJSONAtomic(plan.Path, current, 0o644)
+}
+
+func ApplyShowLineNumber(plan ShowLineNumberPlan) error {
+	if !plan.Changed {
+		return nil
+	}
+	current, err := readAppSettings(plan.Path)
+	if err != nil {
+		return err
+	}
+	current["showLineNumber"] = plan.Enable
 	return fileutil.WriteJSONAtomic(plan.Path, current, 0o644)
 }
 

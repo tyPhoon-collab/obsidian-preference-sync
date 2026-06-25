@@ -68,6 +68,42 @@ vim_mode = true
 	}
 }
 
+func TestLoadShowLineNumber(t *testing.T) {
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.toml")
+	if err := os.WriteFile(configPath, []byte(`
+plugins = []
+show_line_number = true
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := Load(configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.ShowLineNumber == nil || *cfg.ShowLineNumber != true {
+		t.Fatalf("got ShowLineNumber %v, want true", cfg.ShowLineNumber)
+	}
+}
+
+func TestLoadExampleConfigIncludesAppSettings(t *testing.T) {
+	cfg, err := Load(filepath.Join("..", "..", "examples", "config.toml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.VimMode == nil || *cfg.VimMode != true {
+		t.Fatalf("got VimMode %v, want true", cfg.VimMode)
+	}
+	if cfg.ShowLineNumber == nil || *cfg.ShowLineNumber != true {
+		t.Fatalf("got ShowLineNumber %v, want true", cfg.ShowLineNumber)
+	}
+	wantHotkeys := filepath.Join("..", "..", "examples", "obsidian-settings", "hotkeys.json")
+	if cfg.Hotkeys != wantHotkeys {
+		t.Fatalf("got Hotkeys %q, want %q", cfg.Hotkeys, wantHotkeys)
+	}
+}
+
 func TestLoadFonts(t *testing.T) {
 	dir := t.TempDir()
 	configPath := filepath.Join(dir, "config.toml")

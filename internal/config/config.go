@@ -16,6 +16,7 @@ type Config struct {
 	ActiveTheme    string            `toml:"active_theme"`
 	Fonts          Fonts             `toml:"fonts"`
 	VimMode        *bool             `toml:"vim_mode"`
+	ShowLineNumber *bool             `toml:"show_line_number"`
 	Hotkeys        string            `toml:"hotkeys"`
 	VaultFiles     []FileCopy        `toml:"vault_files"`
 	PluginSettings map[string]string `toml:"plugin_settings"`

@@ -84,6 +84,7 @@ Relative `plugin_settings` paths are resolved from the config file directory. `~
 `[fonts]` is optional. `interface`, `text`, and `monospace` update only `interfaceFontFamily`, `textFontFamily`, and `monospaceFontFamily` in `.obsidian/appearance.json`.
 Font files are not installed by this tool; install the same fonts on each machine.
 `vim_mode` is optional. When set, only the `vimMode` field in `.obsidian/app.json` is updated.
+`show_line_number` is optional. When set, only the `showLineNumber` field in `.obsidian/app.json` is updated.
 
 When copying plugin settings, these names are excluded:
 

@@ -29,14 +29,15 @@ themes = [
 
 active_theme = "Obsidian gruvbox"
 
+vim_mode = true
+show_line_number = true
+
+hotkeys = "obsidian-settings/hotkeys.json"
+
 [fonts]
 interface = "Maple Mono NF CN"
 text = "Maple Mono NF CN"
 monospace = "Maple Mono NF CN"
-
-vim_mode = true
-
-hotkeys = "obsidian-settings/hotkeys.json"
 
 [[vault_files]]
 source = "vault-files/.obsidian.vimrc"
