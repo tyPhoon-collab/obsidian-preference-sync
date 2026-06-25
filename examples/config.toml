@@ -14,13 +14,13 @@ plugins = [
   "darlal-switcher-plus",
   "shukuchi",
   "typewriter-mode",
-  "open-tab-settings",
   "various-complements",
   "notebook-navigator",
   "obsidian-vimrc-support",
   "obsidian-meta-bind-plugin",
   "obsidian-advanced-uri",
   "spacekeys",
+  "disable-tabs",
 ]
 
 themes = [
