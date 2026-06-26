@@ -15,6 +15,10 @@ items:
     command: app:open-settings
     description: Open settings
 
+  ".":
+    command: various-complements:show-suggestions
+    description: Show suggestions
+
   l:
     command: obsidian-linter:lint-file
     description: Lint current file
