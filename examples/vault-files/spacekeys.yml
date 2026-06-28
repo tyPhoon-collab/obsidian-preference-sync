@@ -46,7 +46,3 @@ items:
   B:
     command: app:toggle-right-sidebar
     description: Toggle right sidebar
-
-  h:
-    command: notebook-navigator:open-homepage
-    description: Open Notebook Navigator homepage

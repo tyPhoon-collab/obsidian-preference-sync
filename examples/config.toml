@@ -20,7 +20,7 @@ plugins = [
   "obsidian-meta-bind-plugin",
   "obsidian-advanced-uri",
   "spacekeys",
-  "disable-tabs",
+  "auto-close-oldest-tabs",
 ]
 
 themes = [
@@ -55,3 +55,4 @@ easy-typing-obsidian = "plugin-settings/easy-typing-obsidian"
 various-complements = "plugin-settings/various-complements"
 notebook-navigator = "plugin-settings/notebook-navigator"
 spacekeys = "plugin-settings/spacekeys"
+auto-close-oldest-tabs = "plugin-settings/auto-close-oldest-tabs"
