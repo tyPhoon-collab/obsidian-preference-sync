@@ -66,7 +66,7 @@ class ObsidianPreferenceSync < Formula
     system "go", "build",
       "-mod=vendor",
       "-trimpath",
-      "-ldflags", "-s -w",
+      "-ldflags", "-s -w -X main.version=${tag}",
       "-o", bin/"obsidian-preference-sync",
       "./cmd/obsidian-preference-sync"
   end
