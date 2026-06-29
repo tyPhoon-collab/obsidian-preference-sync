@@ -6,6 +6,8 @@ builds:
   - id: obsidian-preference-sync
     main: ./cmd/obsidian-preference-sync
     binary: obsidian-preference-sync
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
     env:
       - CGO_ENABLED=0
     goos:

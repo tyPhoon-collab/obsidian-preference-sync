@@ -61,6 +61,7 @@ obsidian-preference-sync \
 `--dry-run` prints planned changes without writing and exits with code `0`.
 
 `--check` is also available for CI-style drift detection. It prints planned changes and exits with code `1` when changes would be made.
+`--version` prints the CLI version and exits.
 
 Normal execution prints each change as it is applied. Pass `--verbose` to include extra detail such as individual copied settings files.
 When changes are applied, the CLI reminds you to restart Obsidian so plugin and setting changes are fully loaded.
@@ -119,6 +120,7 @@ just build
 
 Releases are created by GitHub Actions when a version tag is pushed.
 The tag is the source of truth for the release version.
+Release builds embed that tag into the CLI, so `obsidian-preference-sync --version` prints the release tag.
 
 Before tagging, run a local snapshot build:
 

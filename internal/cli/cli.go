@@ -25,9 +25,10 @@ func ExitCode(err error) int {
 	return 2
 }
 
-func Run(ctx context.Context, args []string, stdout io.Writer, stderr io.Writer) error {
+func Run(ctx context.Context, args []string, stdout io.Writer, stderr io.Writer, version string) error {
 	fs := flag.NewFlagSet("obsidian-preference-sync", flag.ContinueOnError)
 	fs.SetOutput(stderr)
+	showVersion := fs.Bool("version", false, "Print version and exit")
 	vaultPath := fs.String("vault", "", "Path to an Obsidian vault")
 	configPath := fs.String("config", "", "Path to config.toml")
 	check := fs.Bool("check", false, "Show planned changes and exit with 1 if changes would be made")
@@ -35,6 +36,13 @@ func Run(ctx context.Context, args []string, stdout io.Writer, stderr io.Writer)
 	verbose := fs.Bool("verbose", false, "Print extra progress")
 	allowDangerous := fs.Bool("allow-dangerous", false, "Allow syncing settings for dangerous plugins")
 	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *showVersion {
+		if version == "" {
+			version = "dev"
+		}
+		_, err := fmt.Fprintln(stdout, version)
 		return err
 	}
 	if *vaultPath == "" {
