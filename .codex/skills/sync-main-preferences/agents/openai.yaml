@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sync Main Preferences"
+  short_description: "Compare examples with a reference vault"
+  default_prompt: "Use $sync-main-preferences to compare examples with the reference Obsidian vault and sync the intended preference differences."
