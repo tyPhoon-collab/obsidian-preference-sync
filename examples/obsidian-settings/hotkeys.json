@@ -141,5 +141,14 @@
       ],
       "key": "."
     }
+  ],
+  "editor:toggle-strikethrough": [
+    {
+      "modifiers": [
+        "Ctrl",
+        "Shift"
+      ],
+      "key": "X"
+    }
   ]
 }
