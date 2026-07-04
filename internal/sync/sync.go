@@ -38,6 +38,7 @@ type Plan struct {
 	VimMode               *appsettings.VimModePlan
 	ShowLineNumber        *appsettings.ShowLineNumberPlan
 	CommunityPluginsToAdd []string
+	EnabledPlugins        []string
 	PluginSettings        []settings.CopyPlan
 	Hotkeys               *obsidiansettings.CopyPlan
 	ObsidianSettings      []obsidiansettings.CopyPlan
@@ -114,11 +115,20 @@ func BuildPlan(ctx context.Context, opts Options) (Plan, config.Config, vault.Va
 		return Plan{}, config.Config{}, vault.Vault{}, err
 	}
 	client := gh.NewClient()
+	enabledPlugins := make([]string, 0, len(cfg.Plugins))
 	for _, pluginID := range cfg.Plugins {
 		plugin, ok := reg.Lookup(pluginID)
 		if !ok {
-			return Plan{}, config.Config{}, vault.Vault{}, fmt.Errorf("plugin %q not found in Obsidian community registry", pluginID)
+			p := install.PlanPlugin(v, registry.Plugin{ID: pluginID})
+			if p.NeedsInstall {
+				plan.Warnings = append(plan.Warnings, fmt.Sprintf("plugin %q is not in the Obsidian community registry and is not installed; skipping install and enable", pluginID))
+				continue
+			}
+			plan.Warnings = append(plan.Warnings, fmt.Sprintf("plugin %q is not in the Obsidian community registry; enabling existing local plugin only", pluginID))
+			enabledPlugins = append(enabledPlugins, pluginID)
+			continue
 		}
+		enabledPlugins = append(enabledPlugins, pluginID)
 		p := install.PlanPlugin(v, plugin)
 		if p.NeedsInstall {
 			plan.PluginInstalls = append(plan.PluginInstalls, p)
@@ -181,16 +191,17 @@ func BuildPlan(ctx context.Context, opts Options) (Plan, config.Config, vault.Va
 		plan.Warnings = append(plan.Warnings, fmt.Sprintf("enabled plugin %q is not listed in config plugins; disable it in Obsidian or add it to config", pluginID))
 	}
 
-	added, _, err := v.UpsertEnabledPlugins(cfg.Plugins, true)
+	added, _, err := v.UpsertEnabledPlugins(enabledPlugins, true)
 	if err != nil {
 		return Plan{}, config.Config{}, vault.Vault{}, err
 	}
 	plan.CommunityPluginsToAdd = added
+	plan.EnabledPlugins = enabledPlugins
 
 	for _, pluginID := range vault.SortedKeys(cfg.PluginSettings) {
 		var cp settings.CopyPlan
 		var err error
-		if contains(cfg.Plugins, pluginID) {
+		if contains(enabledPlugins, pluginID) {
 			cp, err = settings.PlanAssumingInstalled(v, pluginID, cfg.PluginSettings[pluginID])
 		} else {
 			cp, err = settings.Plan(v, pluginID, cfg.PluginSettings[pluginID])
@@ -324,7 +335,11 @@ func Apply(ctx context.Context, plan Plan, cfg config.Config, v vault.Vault, ver
 		printSectionHeader(stdout, &printedPlugins, "Plugins")
 		fmt.Fprintf(stdout, "  %s %-14s %s\n", out.add("+"), "enable", pluginID)
 	}
-	added, enabledChanged, err := v.UpsertEnabledPlugins(cfg.Plugins, false)
+	pluginsToEnable := plan.EnabledPlugins
+	if pluginsToEnable == nil {
+		pluginsToEnable = cfg.Plugins
+	}
+	added, enabledChanged, err := v.UpsertEnabledPlugins(pluginsToEnable, false)
 	if err != nil {
 		return err
 	}
