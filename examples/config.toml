@@ -21,6 +21,7 @@ plugins = [
   "obsidian-advanced-uri",
   "spacekeys",
   "auto-close-oldest-tabs",
+  "cursor-smith",
 ]
 
 themes = [
@@ -56,3 +57,4 @@ various-complements = "plugin-settings/various-complements"
 notebook-navigator = "plugin-settings/notebook-navigator"
 spacekeys = "plugin-settings/spacekeys"
 auto-close-oldest-tabs = "plugin-settings/auto-close-oldest-tabs"
+cursor-smith = "plugin-settings/cursor-smith"
