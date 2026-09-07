@@ -22,6 +22,8 @@ plugins = [
   "spacekeys",
   "auto-close-oldest-tabs",
   "cursor-smith",
+  "calendar",
+  "vim-im-select",
 ]
 
 themes = [
