@@ -1,18 +1,18 @@
 {
   "strategy": "japanese",
   "cedictPath": "./cedict_ts.u8",
-  "matchStrategy": "prefix",
+  "matchStrategy": "partial",
   "fuzzyMatch": true,
   "minFuzzyMatchScore": 0.5,
   "matchingWithoutEmoji": true,
   "treatAccentDiacriticsAsAlphabeticCharacters": false,
   "treatUnderscoreAsPartOfWord": false,
-  "maxNumberOfSuggestions": 5,
+  "maxNumberOfSuggestions": 15,
   "maxNumberOfWordsAsPhrase": 3,
   "minNumberOfCharactersTriggered": 0,
   "minNumberOfWordsTriggeredPhrase": 1,
   "complementAutomatically": true,
-  "delayMilliSeconds": 800,
+  "delayMilliSeconds": 120,
   "disableSuggestionsDuringImeOn": false,
   "disableSuggestionsInMathBlock": true,
   "disableSuggestionsInCodeBlock": true,
@@ -31,8 +31,11 @@
   "hotkeys": {
     "select": [
       {
-        "modifiers": [],
-        "key": "Enter"
+        "modifiers": [
+          "Ctrl"
+        ],
+        "key": "m",
+        "hideHotkeyGuide": false
       }
     ],
     "select with custom alias": [],
@@ -91,6 +94,7 @@
   "excludeSelfInternalLink": false,
   "excludeExistingInActiveFileInternalLinks": false,
   "excludeUnresolvedInternalLinks": false,
+  "excludeInternalLinksInCode": false,
   "updateInternalLinksOnSave": true,
   "insertAliasTransformedFromDisplayedInternalLink": {
     "enabled": false,
@@ -109,6 +113,7 @@
   "intelligentSuggestionPrioritization": {
     "enabled": true,
     "historyFilePath": "",
+    "prettyPrintHistoryFile": false,
     "maxDaysToKeepHistory": 30,
     "maxNumberOfHistoryToKeep": 0
   },

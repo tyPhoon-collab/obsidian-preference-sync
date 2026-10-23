@@ -24,6 +24,8 @@ plugins = [
   "cursor-smith",
   "calendar",
   "vim-im-select",
+  "templater-obsidian",
+  "unique-tab",
 ]
 
 themes = [
@@ -60,3 +62,4 @@ notebook-navigator = "plugin-settings/notebook-navigator"
 spacekeys = "plugin-settings/spacekeys"
 auto-close-oldest-tabs = "plugin-settings/auto-close-oldest-tabs"
 cursor-smith = "plugin-settings/cursor-smith"
+templater-obsidian = "plugin-settings/templater-obsidian"

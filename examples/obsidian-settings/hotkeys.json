@@ -67,15 +67,6 @@
       "key": "P"
     }
   ],
-  "quick-peek-sidebar:toggle-both-sidebars": [
-    {
-      "modifiers": [
-        "Alt",
-        "Mod"
-      ],
-      "key": "S"
-    }
-  ],
   "editor:set-heading-4": [
     {
       "modifiers": [
