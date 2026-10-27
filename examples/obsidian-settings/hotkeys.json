@@ -33,15 +33,6 @@
       "key": "["
     }
   ],
-  "darlal-switcher-plus:switcher-plus:open": [
-    {
-      "modifiers": [
-        "Mod"
-      ],
-      "key": "P"
-    }
-  ],
-  "command-palette:open": [],
   "editor:set-heading-2": [
     {
       "modifiers": [
@@ -56,15 +47,6 @@
         "Ctrl"
       ],
       "key": "3"
-    }
-  ],
-  "darlal-switcher-plus:switcher-plus:open-commands": [
-    {
-      "modifiers": [
-        "Mod",
-        "Shift"
-      ],
-      "key": "P"
     }
   ],
   "editor:set-heading-4": [
