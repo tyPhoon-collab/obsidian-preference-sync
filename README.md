@@ -116,6 +116,12 @@ just build
 
 `just check` runs format, tests, and build.
 
+Run the CLI directly from source:
+
+```sh
+just run --vault /path/to/your/vault --config examples/config.toml --dry-run
+```
+
 ## Release
 
 Releases are created by GitHub Actions when a version tag is pushed.

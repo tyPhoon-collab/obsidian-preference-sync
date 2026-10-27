@@ -12,6 +12,11 @@ test:
 build:
     go build -o bin/obsidian-preference-sync ./cmd/obsidian-preference-sync
 
+# Run the CLI with the supplied arguments.
+[positional-arguments]
+run *args:
+    go run ./cmd/obsidian-preference-sync "$@"
+
 check: fmt test build
 
 release-check:
