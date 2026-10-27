@@ -2,6 +2,7 @@ package install
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -43,29 +44,33 @@ func InstallPlugin(ctx context.Context, v vault.Vault, client gh.Client, plugin 
 	if err != nil {
 		return plan, err
 	}
-	assetURLs := map[string]string{}
+	assets := map[string][]byte{}
 	for _, name := range requiredAssets {
-		url, ok := release.AssetURL(name)
-		if !ok {
+		data, err := client.Download(ctx, release.AssetURL(name))
+		if errors.Is(err, gh.ErrNotFound) {
 			return plan, fmt.Errorf("release %s for %s does not contain required asset %s", release.TagName, plugin.ID, name)
 		}
-		assetURLs[name] = url
+		if err != nil {
+			return plan, err
+		}
+		assets[name] = data
 	}
 	for _, name := range optionalAssets {
-		if url, ok := release.AssetURL(name); ok {
-			assetURLs[name] = url
+		data, err := client.Download(ctx, release.AssetURL(name))
+		if errors.Is(err, gh.ErrNotFound) {
+			continue
 		}
+		if err != nil {
+			return plan, err
+		}
+		assets[name] = data
 	}
 
 	pluginDir := v.PluginDir(plugin.ID)
 	if err := os.MkdirAll(pluginDir, 0o755); err != nil {
 		return plan, fmt.Errorf("create plugin directory %s: %w", pluginDir, err)
 	}
-	for name, url := range assetURLs {
-		data, err := client.Download(ctx, url)
-		if err != nil {
-			return plan, err
-		}
+	for name, data := range assets {
 		if err := fileutil.WriteFileAtomic(filepath.Join(pluginDir, name), data, 0o644); err != nil {
 			return plan, err
 		}

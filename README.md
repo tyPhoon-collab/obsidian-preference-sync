@@ -4,6 +4,8 @@
 
 It does not synchronize vault content. It only touches the plugin IDs, plugin settings, and app settings that are explicitly listed in the config file.
 
+Downloads use raw repository files for registries and themes, and published GitHub Release assets for plugins, without calling the GitHub REST API. Plugin assets are downloaded from a single resolved release tag.
+
 ## Safety policy
 
 - `community-plugins.json` is updated by upsert only.
