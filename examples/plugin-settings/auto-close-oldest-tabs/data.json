@@ -1,5 +1,5 @@
 {
-  "maxTabs": 3,
-  "alwaysNewTab": true,
+  "maxTabs": 5,
+  "alwaysNewTab": false,
   "ignorePinnedTabs": true
 }
