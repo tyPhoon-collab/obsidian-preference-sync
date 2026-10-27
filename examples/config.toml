@@ -19,7 +19,7 @@ plugins = [
   "obsidian-vimrc-support",
   "obsidian-meta-bind-plugin",
   "obsidian-advanced-uri",
-  "spacekeys",
+  "vimakase",
   "auto-close-oldest-tabs",
   "cursor-smith",
   "calendar",
@@ -49,17 +49,12 @@ monospace = "Maple Mono NF CN"
 source = "vault-files/.obsidian.vimrc"
 target = ".obsidian.vimrc"
 
-[[vault_files]]
-source = "vault-files/spacekeys.yml"
-target = "spacekeys.yml"
-
 [plugin_settings]
 obsidian-auto-link-title = "plugin-settings/obsidian-auto-link-title"
 obsidian-linter = "plugin-settings/obsidian-linter"
 easy-typing-obsidian = "plugin-settings/easy-typing-obsidian"
 various-complements = "plugin-settings/various-complements"
 notebook-navigator = "plugin-settings/notebook-navigator"
-spacekeys = "plugin-settings/spacekeys"
 auto-close-oldest-tabs = "plugin-settings/auto-close-oldest-tabs"
 cursor-smith = "plugin-settings/cursor-smith"
 templater-obsidian = "plugin-settings/templater-obsidian"
