@@ -65,6 +65,7 @@
     "replacement": "const m={',':'，','.':'。','?':'？','!':'！',':':'：',';':'；','(':'（$0）'}; return leftMatches[1] + m[leftMatches[2]];",
     "options": "rF",
     "priority": 15,
+    "enabled": false,
     "description": "CJK文字の後の半角句読点を全角に変換"
   },
   {
