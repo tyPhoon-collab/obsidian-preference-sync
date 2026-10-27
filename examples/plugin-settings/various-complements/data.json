@@ -43,14 +43,18 @@
     "select with query alias": [],
     "up": [
       {
-        "modifiers": [],
-        "key": "ArrowUp"
+        "modifiers": [
+          "Ctrl"
+        ],
+        "key": "p"
       }
     ],
     "down": [
       {
-        "modifiers": [],
-        "key": "ArrowDown"
+        "modifiers": [
+          "Ctrl"
+        ],
+        "key": "n"
       }
     ],
     "select 1st": [],
